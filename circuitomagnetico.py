@@ -4,8 +4,8 @@
 import tkinter as tk
 import math
 
-def reluctancia(largo, u_o, superficie):
-    re = largo/(u_o * superficie)
+def reluctancia(largo, u_o, superficie, f_apilado):
+    re = largo/(u_o * superficie * f_apilado)
     return re
 
 def dispersion_areaefectiva(area, porcentaje_deformacion):
@@ -20,7 +20,7 @@ def solucion_circuitomagentico(valores_magnitudes_electricas, valores_dimensione
     flujo1_bandera = False
 
     #asignar valores a variables de magnitudes electricas
-    N_1, N_2, I_1, I_2, flujo_E = valores_magnitudes_electricas
+    N_1, N_2, I_1, I_2, flujo_E, f_apilado = valores_magnitudes_electricas
 
     #asignar valores a variables de magnitudes electricas
     L3, LE, Sc, SL, A, L1, L2 = valores_dimensiones
@@ -33,7 +33,7 @@ def solucion_circuitomagentico(valores_magnitudes_electricas, valores_dimensione
         fmm_bobina2 = N_2 * I_2
 
     #calculo de la reluctancia del aire
-    reluctancia_entrehierro = reluctancia(valores_dimensiones[0], 4*math.pi*10**-7, valores_dimensiones[2])
+    reluctancia_entrehierro = reluctancia(LE, 4*math.pi*10**-7, Sc, f_apilado)
 
     #calculo de la fmm del entrehierro
     fmm_entrehierro = reluctancia_entrehierro * flujo_E
@@ -45,7 +45,7 @@ def solucion_circuitomagentico(valores_magnitudes_electricas, valores_dimensione
     H = funcion_B_H(B_flujoe)
 
     #Obtengo la fmm de la reluctancia de la barra
-    fmm_reluctancia_barra = H * LE
+    fmm_reluctancia_barra = H * L3
 
     #Obtengo la fmm de la barra total
     fmm_barra_central_total = fmm_reluctancia_barra + fmm_entrehierro
