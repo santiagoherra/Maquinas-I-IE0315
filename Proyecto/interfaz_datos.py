@@ -1,5 +1,7 @@
 import tkinter as tk
 from tkinter import messagebox, ttk
+from circuitomagnetico import solucion_circuitomagentico
+
 
 # Función para validar cada campo de entrada
 def validar_entrada(entry, campo_nombre, condicion=None):
@@ -60,14 +62,13 @@ def recoger_datos(entry_N1, entry_N2, entry_I1, entry_I2, entry_factor_apilado,
         return
 
     # Guardar los valores obtenidos en listas
-    valores_magnitudes_electricas = [N1, N2, I1, I2]
+    valores_magnitudes_electricas = [N1, N2, I1, I2, flujo_entre, coeficiente_dispersion, porcentaje_deformacion, factor_apilado]
     valores_dimensiones = [L1, L2, L3, LE, Sc, SL, A]
-    otros_valores = [flujo_entre, coeficiente_dispersion, porcentaje_deformacion, factor_apilado]
     
     # Imprimir para verificar
     print("Magnitudes Eléctricas:", valores_magnitudes_electricas)
     print("Dimensiones:", valores_dimensiones)
-    print("Otros Valores:", otros_valores)
+
 
     messagebox.showinfo("Datos recogidos", f"Datos recogidos correctamente")
 
