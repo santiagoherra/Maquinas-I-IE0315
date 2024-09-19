@@ -30,7 +30,7 @@ def pedir_datos():
         I2 = None
     
     # Otros parámetros con validaciones
-    factor_apilado = pedir_parametro("Factor de apilado (valor entre 0 y 1): ", float, lambda x: 0 <= x <= 1, "Debe ser un número entre 0 y 1.")
+    factor_apilado = pedir_parametro("Factor de apilado (valor entre 0 y 1, exclusivo): ", float, lambda x: 0 < x < 1, "Debe estar entre 0 y 1 (excluyendo los extremos).")
     SL = pedir_parametro("Área de sección transversal SL (m²): ", float, lambda x: x > 0, "Debe ser un número positivo.")
     Sc = pedir_parametro("Área de sección transversal Sc (m²): ", float, lambda x: x > 0, "Debe ser un número positivo.")
     
