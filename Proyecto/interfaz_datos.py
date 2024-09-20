@@ -1,5 +1,8 @@
 import tkinter as tk
 from tkinter import messagebox, ttk
+import re
+import numpy as np
+from scipy.optimize import curve_fit
 
 # Función para validar cada campo de entrada
 def validar_entrada(entry, campo_nombre, condicion=None):
@@ -72,9 +75,68 @@ def recoger_datos(entry_N1, entry_N2, entry_I1, entry_I2, entry_factor_apilado,
     messagebox.showinfo("Datos recogidos", f"Datos recogidos correctamente")
 
 
+# Función no lineal B(H) = a * H / (b + H)
+def funcion_bh(H, a, b):
+    return a * H / (b + H)
+
+# Función para procesar los datos de la tabla y convertirlos en listas de H y B
+def procesar_datos_tabla(texto_tabla):
+    pares_hb = texto_tabla.split(";")
+    H_values = []
+    B_values = []
+
+    for par in pares_hb:
+        if par.strip():
+            H, B = map(float, par.split(","))
+            H_values.append(H)
+            B_values.append(B)
+
+    print("Valores H:", H_values)
+    print("Valores B:", B_values)
+
+    return H_values, B_values
+
+# Modificar para devolver la función lambda B(H)
+def generar_ecuacion_bh(H_values, B_values):
+    # Ajuste no lineal con la función B(H) = a * H / (b + H)
+    popt, _ = curve_fit(funcion_bh, H_values, B_values, p0=[15, 15])
+    a, b = popt
+    
+    ecuacion_str = f"{a:.4f} * H / ({b:.4f} + H)"
+    
+    # Mostrar la función B(H)
+    print(f"La función B(H) ajustada es: {ecuacion_str}")
+    messagebox.showinfo("Ecuación B(H)", f"La ecuación B(H) es: {ecuacion_str}")
+    
+    # Devolver la función lambda para usarla en otros archivos
+    return lambda H: a * H / (b + H)
+
+# Función para validar el formato de la tabla
+def validar_formato_tabla(texto):
+    texto = texto.strip()
+    if texto.endswith(";"):
+        texto = texto[:-1].strip()
+
+    patron = r'^\d+(\.\d+)?\s*,\s*\d+(\.\d+)?\s*(;\s*\d+(\.\d+)?\s*,\s*\d+(\.\d+)?\s*)*$'
+    if not re.fullmatch(patron, texto):
+        messagebox.showerror("Error de formato", "El formato debe ser: H1,B1; H2,B2; con números separados por comas y punto y coma.")
+        return False
+
+    return True
+
+# Función para validar la ecuación
+def validar_formato_ecuacion(texto):
+    texto = texto.upper()
+    permitido = set("H0123456789+-*/= ")
+    for char in texto:
+        if char not in permitido:
+            messagebox.showerror("Error de formato", "Solo se permiten números, la letra 'H', y operadores matemáticos.")
+            return False
+    return True
+
 # Función para obtener la curva H-B a través de la interfaz gráfica
 def obtener_curva_hb_gui(parent_ventana):
-    ventana_hb = tk.Toplevel(parent_ventana)  # Usar ventana padre
+    ventana_hb = tk.Toplevel(parent_ventana)
     ventana_hb.title("Curva H-B")
     
     def seleccionar_opcion():
@@ -100,4 +162,15 @@ def obtener_curva_hb_gui(parent_ventana):
     label_ecuacion = tk.Label(ventana_hb, text="Ingrese la ecuación para H-B (Ejemplo: B = m * H + c)")
     entry_ecuacion = tk.Entry(ventana_hb)
 
-    tk.Button(ventana_hb, text="Aceptar", command=lambda: print("Opción seleccionada:", hb_opcion.get())).pack()
+    tk.Button(ventana_hb, text="Aceptar", command=lambda: (
+        texto_tabla := entry_tabla.get().strip() if hb_opcion.get() == "tabla" else None,
+        texto_ecuacion := entry_ecuacion.get().strip() if hb_opcion.get() == "ecuacion" else None,
+        validar_formato_tabla(texto_tabla) if texto_tabla else None,
+        generar_ecuacion_bh(*procesar_datos_tabla(texto_tabla)) if texto_tabla else None
+    )).pack()
+
+# Crear ventana principal
+ventana = tk.Tk()
+ventana.title("Formulario de Datos")
+tk.Button(ventana, text="Ingresar Curva H-B", command=lambda: obtener_curva_hb_gui(ventana)).pack()
+ventana.mainloop()
