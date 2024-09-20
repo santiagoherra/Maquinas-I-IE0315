@@ -4,34 +4,36 @@ import re
 import numpy as np
 from scipy.optimize import curve_fit
 
-# Función para validar cada campo de entrada
-def validar_entrada(entry, campo_nombre, condicion=None):
-    try:
-        valor = float(entry.get().strip())  # Eliminar espacios en blanco
-        if condicion and not condicion(valor):
-            raise ValueError
-        return valor
-    except ValueError:
-        messagebox.showerror("Error", f"Valor no válido o fuera de rango en el campo: {campo_nombre}")
-        return None
-
 # Función para convertir unidades (longitud o área)
 def convertir_a_unidades(valor, unidad, tipo):
-    if tipo == 'longitud':
-        if unidad == "cm":
-            return valor / 100
-        elif unidad == "mm":
-            return valor / 1000
-    elif tipo == 'area':
-        if unidad == "cm²":
-            return valor / 10000
-        elif unidad == "mm²":
-            return valor / 1000000
+    conversiones = {
+        'longitud': {'cm': 100, 'mm': 1000},
+        'area': {'cm²': 10000, 'mm²': 1000000}
+    }
+    if unidad in conversiones[tipo]:
+        return valor / conversiones[tipo][unidad]
     return valor
 
-# Función para entradas opcionales
-def validar_opcional(entry, campo_nombre):
-    return validar_entrada(entry, campo_nombre) if entry.get() else None
+# Función para validar cada campo de entrada
+def validar_entrada(entry, campo_nombre, permitir_negativo=False, condicion=None):
+    try:
+        valor = float(entry.get().strip())  # Eliminar espacios en blanco
+        
+        # Si no se permiten negativos y el valor es negativo, lanzar error
+        if not permitir_negativo and valor < 0:
+            raise ValueError
+        
+        # Condición personalizada
+        if condicion and not condicion(valor):
+            raise ValueError
+        
+        return valor
+    except ValueError:
+        mensaje_error = f"Valor no válido o fuera de rango en el campo: {campo_nombre}"
+        if not permitir_negativo:
+            mensaje_error += " (no se permiten valores negativos)"
+        messagebox.showerror("Error", mensaje_error)
+        return None
 
 # Función para recoger datos y validar los campos de entrada
 def recoger_datos(entry_N1, entry_N2, entry_I1, entry_I2, entry_factor_apilado, 
@@ -39,38 +41,42 @@ def recoger_datos(entry_N1, entry_N2, entry_I1, entry_I2, entry_factor_apilado,
                   entry_flujo_entre, entry_coef_dispersion, entry_porcentaje_deformacion,
                   unidad_SL, unidad_Sc, unidad_A, unidad_L1, unidad_L2, unidad_L3, unidad_LE):
     
-    N1 = validar_entrada(entry_N1, "N1 [vueltas]")
-    N2 = validar_entrada(entry_N2, "N2 [vueltas]")
-    I1 = validar_opcional(entry_I1, "I1 [A]")
-    I2 = validar_opcional(entry_I2, "I2 [A]")
-    factor_apilado = validar_entrada(entry_factor_apilado, "Factor Apilado", lambda x: 0 < x < 1)
+    # Validaciones: no permitir negativos excepto en corrientes
+    N1 = validar_entrada(entry_N1, "N1 [vueltas]", permitir_negativo=False)
+    N2 = validar_entrada(entry_N2, "N2 [vueltas]", permitir_negativo=False)
     
-    SL = convertir_a_unidades(validar_entrada(entry_SL, "Área SL"), unidad_SL.get(), 'area')
-    Sc = convertir_a_unidades(validar_entrada(entry_Sc, "Área Sc"), unidad_Sc.get(), 'area')
+    I1 = validar_entrada(entry_I1, "I1 [A]", permitir_negativo=True) if entry_I1.get() else None
+    I2 = validar_entrada(entry_I2, "I2 [A]", permitir_negativo=True) if entry_I2.get() else None
     
-    A = convertir_a_unidades(validar_entrada(entry_A, "Ancho A"), unidad_A.get(), 'longitud')
-    L1 = convertir_a_unidades(validar_entrada(entry_L1, "Longitud L1"), unidad_L1.get(), 'longitud')
-    L2 = convertir_a_unidades(validar_entrada(entry_L2, "Longitud L2"), unidad_L2.get(), 'longitud')
-    L3 = convertir_a_unidades(validar_entrada(entry_L3, "Altura L3"), unidad_L3.get(), 'longitud')
-    LE = convertir_a_unidades(validar_entrada(entry_LE, "Longitud LE"), unidad_LE.get(), 'longitud')
+    factor_apilado = validar_entrada(entry_factor_apilado, "Factor Apilado", permitir_negativo=False, condicion=lambda x: 0 < x < 1)
     
-    flujo_entre = validar_entrada(entry_flujo_entre, "Flujo ΦE [Wb]")
-    coeficiente_dispersion = validar_opcional(entry_coef_dispersion, "Coef. Dispersión")
-    porcentaje_deformacion = validar_opcional(entry_porcentaje_deformacion, "Deformación Área [%]")
+    # Validación de áreas y longitudes (no se permiten negativos)
+    SL = convertir_a_unidades(validar_entrada(entry_SL, "Área SL", permitir_negativo=False), unidad_SL.get(), 'area')
+    Sc = convertir_a_unidades(validar_entrada(entry_Sc, "Área Sc", permitir_negativo=False), unidad_Sc.get(), 'area')
+    
+    A = convertir_a_unidades(validar_entrada(entry_A, "Ancho A", permitir_negativo=False), unidad_A.get(), 'longitud')
+    L1 = convertir_a_unidades(validar_entrada(entry_L1, "Longitud L1", permitir_negativo=False), unidad_L1.get(), 'longitud')
+    L2 = convertir_a_unidades(validar_entrada(entry_L2, "Longitud L2", permitir_negativo=False), unidad_L2.get(), 'longitud')
+    L3 = convertir_a_unidades(validar_entrada(entry_L3, "Altura L3", permitir_negativo=False), unidad_L3.get(), 'longitud')
+    LE = convertir_a_unidades(validar_entrada(entry_LE, "Longitud LE", permitir_negativo=False), unidad_LE.get(), 'longitud')
+    
+    flujo_entre = validar_entrada(entry_flujo_entre, "Flujo ΦE [Wb]", permitir_negativo=False)
+    
+    coeficiente_dispersion = validar_entrada(entry_coef_dispersion, "Coef. Dispersión", permitir_negativo=False) if entry_coef_dispersion.get() else None
+    porcentaje_deformacion = validar_entrada(entry_porcentaje_deformacion, "Deformación Área [%]", permitir_negativo=False) if entry_porcentaje_deformacion.get() else None
 
+    # Verificar si algún campo contiene un valor no válido
     if None in [N1, N2, factor_apilado, SL, Sc, A, L1, L2, L3, LE, flujo_entre]:
         messagebox.showerror("Error", "Por favor corrija los errores antes de continuar.")
         return
 
     # Guardar los valores obtenidos en listas
-    valores_magnitudes_electricas = [N1, N2, I1, I2]
+    valores_magnitudes_electricas = [N1, N2, I1, I2, flujo_entre, coeficiente_dispersion, porcentaje_deformacion, factor_apilado]
     valores_dimensiones = [L1, L2, L3, LE, Sc, SL, A]
-    otros_valores = [flujo_entre, coeficiente_dispersion, porcentaje_deformacion, factor_apilado]
     
     # Imprimir para verificar
     print("Magnitudes Eléctricas:", valores_magnitudes_electricas)
     print("Dimensiones:", valores_dimensiones)
-    print("Otros Valores:", otros_valores)
 
     messagebox.showinfo("Datos recogidos", f"Datos recogidos correctamente")
 
