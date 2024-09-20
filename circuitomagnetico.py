@@ -88,16 +88,4 @@ def solucion_circuitomagentico(valores_magnitudes_electricas, valores_dimensione
 
 
 
-    
-    
-    
-    
-
-    
-     
-
-
-
-
-
 

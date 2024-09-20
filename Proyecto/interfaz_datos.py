@@ -124,10 +124,12 @@ def validar_formato_tabla(texto):
 
     return True
 
-# Función para validar la ecuación
+# Función para validar la ecuación, transforma "h" en "H" y valida los caracteres permitidos
 def validar_formato_ecuacion(texto):
-    texto = texto.upper()
+    # Asegurar que "h" se convierta en "H" antes de validar
+    texto = texto.replace('h', 'H').upper()  # Convertir "h" a "H" y todo a mayúsculas
     permitido = set("H0123456789+-*/= ")
+    
     for char in texto:
         if char not in permitido:
             messagebox.showerror("Error de formato", "Solo se permiten números, la letra 'H', y operadores matemáticos.")
@@ -166,11 +168,15 @@ def obtener_curva_hb_gui(parent_ventana):
         texto_tabla := entry_tabla.get().strip() if hb_opcion.get() == "tabla" else None,
         texto_ecuacion := entry_ecuacion.get().strip() if hb_opcion.get() == "ecuacion" else None,
         validar_formato_tabla(texto_tabla) if texto_tabla else None,
-        generar_ecuacion_bh(*procesar_datos_tabla(texto_tabla)) if texto_tabla else None
+        generar_ecuacion_bh(*procesar_datos_tabla(texto_tabla)) if texto_tabla else None,
+        texto_ecuacion := texto_ecuacion.replace('h', 'H') if texto_ecuacion else None,  # Convertir 'h' en 'H'
+        validar_formato_ecuacion(texto_ecuacion) if texto_ecuacion else None,
+        print(f"Ecuación ingresada: {texto_ecuacion}") if texto_ecuacion else None
     )).pack()
 
+
 # Crear ventana principal
-ventana = tk.Tk()
-ventana.title("Formulario de Datos")
-tk.Button(ventana, text="Ingresar Curva H-B", command=lambda: obtener_curva_hb_gui(ventana)).pack()
-ventana.mainloop()
+#ventana = tk.Tk()
+#ventana.title("Formulario de Datos")
+#tk.Button(ventana, text="Ingresar Curva H-B", command=lambda: obtener_curva_hb_gui(ventana)).pack()
+#ventana.mainloop()

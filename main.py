@@ -5,7 +5,6 @@
 import tkinter as tk
 from tkinter import ttk
 from Proyecto.interfaz_datos import recoger_datos, obtener_curva_hb_gui
-
 # Crear la ventana principal de Tkinter
 ventana = tk.Tk()
 ventana.title("Formulario de Datos - Circuito Magnético")
@@ -49,6 +48,8 @@ tk.Button(ventana, text="Enviar", command=lambda: recoger_datos(
 
 # Botón para abrir la ventana de Curva H-B
 tk.Button(ventana, text="Ingresar Curva H-B", command=lambda: obtener_curva_hb_gui(ventana)).grid(row=16, column=0, columnspan=3, pady=10)
+
+
 
 # Ejecutar la aplicación
 ventana.mainloop()
