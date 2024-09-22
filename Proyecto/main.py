@@ -6,7 +6,7 @@ import tkinter as tk
 from tkinter import ttk, messagebox, PhotoImage
 
 #Archivos utilizados
-from Proyecto.interfaz_datos import recoger_datos, obtener_curva_hb_gui, generar_ecuacion_bh
+from interfaz_datos import recoger_datos, obtener_curva_hb_gui, generar_ecuacion_bh
 from circuitomagnetico import solucion_circuitomagentico
 
 
