@@ -9,7 +9,7 @@ def reluctancia(largo, u_o, superficie, f_apilado):
     return re
 
 #Aqui es la funcion de la solucion principal del circuito
-def solucion_circuitomagentico(valores_magnitudes_electricas, valores_dimensiones, funcion_H_B):
+def solucion_circuitomagentico(valores_magnitudes_electricas, valores_dimensiones):
     bobina1_bandera = False
     flujo1_bandera = False
 
@@ -25,7 +25,7 @@ def solucion_circuitomagentico(valores_magnitudes_electricas, valores_dimensione
 
     #Si la persona dio el porcentaje de deformacion del area. Se usa elif porque solo se tiene que 
     #aplicar uno creo.
-    elif defor_area != None:
+    if defor_area != None:
         A = A * (1 + defor_area / 100)
 
     #Se seleccionado cual bobina es la que se le dio el valor de corriente osea i1 o i2
