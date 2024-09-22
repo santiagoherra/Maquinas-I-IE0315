@@ -3,9 +3,13 @@
 
 # Librerías y archivos
 import tkinter as tk
-from tkinter import ttk, messagebox
+from tkinter import ttk, messagebox, PhotoImage
+
+#Archivos utilizados
 from Proyecto.interfaz_datos import recoger_datos, obtener_curva_hb_gui, generar_ecuacion_bh
 from circuitomagnetico import solucion_circuitomagentico
+
+
 # Crear la ventana principal de Tkinter
 ventana = tk.Tk()
 ventana.title("Formulario de Datos - Circuito Magnético")
@@ -40,6 +44,11 @@ entry_LE, unidad_LE = crear_entrada("LE [Longitud]", 11, ["m", "cm", "mm"])
 entry_flujo_entre, _ = crear_entrada("Flujo ΦE [Wb]", 12)
 entry_coef_dispersion, _ = crear_entrada("Coef. Dispersión", 13)
 entry_porcentaje_deformacion, _ = crear_entrada("Deformación Área [%]", 14)
+
+#Agregando la imagen del circuito a la ventana principal para que se visualice el circuito
+imagen_circuito = PhotoImage(file="Proyecto/figura_circuito.png")
+label_imagen_circuito = tk.Label(ventana, image=imagen_circuito)
+label_imagen_circuito.grid(row=0, column=4, rowspan=15, padx=20, pady=20, sticky='n')
 
 # Función para procesar los datos
 def procesar_datos():
