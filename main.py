@@ -3,11 +3,14 @@
 
 # Librerías y archivos
 import tkinter as tk
-from tkinter import ttk
-from Proyecto.interfaz_datos import recoger_datos, obtener_curva_hb_gui
+from tkinter import ttk, messagebox
+from Proyecto.interfaz_datos import recoger_datos, obtener_curva_hb_gui, generar_ecuacion_bh
+from circuitomagnetico import solucion_circuitomagentico
 # Crear la ventana principal de Tkinter
 ventana = tk.Tk()
 ventana.title("Formulario de Datos - Circuito Magnético")
+
+funcion_H_B = None
 
 # Función para crear una entrada con un combobox para la unidad
 def crear_entrada(label, fila, tipo_unidad=None):
@@ -38,18 +41,45 @@ entry_flujo_entre, _ = crear_entrada("Flujo ΦE [Wb]", 12)
 entry_coef_dispersion, _ = crear_entrada("Coef. Dispersión", 13)
 entry_porcentaje_deformacion, _ = crear_entrada("Deformación Área [%]", 14)
 
-# Botón para enviar los datos, pasando las entradas y unidades a la función recoger_datos
-tk.Button(ventana, text="Enviar", command=lambda: recoger_datos(
-    entry_N1, entry_N2, entry_I1, entry_I2, entry_factor_apilado, entry_SL,
-    entry_Sc, entry_A, entry_L1, entry_L2, entry_L3, entry_LE,
-    entry_flujo_entre, entry_coef_dispersion, entry_porcentaje_deformacion,
-    unidad_SL, unidad_Sc, unidad_A, unidad_L1, unidad_L2, unidad_L3, unidad_LE
-)).grid(row=15, column=0, columnspan=3, pady=10)
+# Función para procesar los datos
+def procesar_datos():
+    global funcion_H_B  # Necesitamos acceder a la variable global
+    
+    # Verificar si funcion_H_B está definida
+    if not funcion_H_B:
+        messagebox.showerror("Error", "La función B-H no está definida.")
+        return
 
-# Botón para abrir la ventana de Curva H-B
-tk.Button(ventana, text="Ingresar Curva H-B", command=lambda: obtener_curva_hb_gui(ventana)).grid(row=16, column=0, columnspan=3, pady=10)
+    # Recolectar los datos
+    valores_magnitudes_electricas, valores_dimensiones = recoger_datos(
+        entry_N1, entry_N2, entry_I1, entry_I2, entry_factor_apilado, entry_SL,
+        entry_Sc, entry_A, entry_L1, entry_L2, entry_L3, entry_LE,
+        entry_flujo_entre, entry_coef_dispersion, entry_porcentaje_deformacion,
+        unidad_SL, unidad_Sc, unidad_A, unidad_L1, unidad_L2, unidad_L3, unidad_LE
+    )
+    
+    # Asegurarse que no haya errores en los datos antes de continuar
+    if valores_magnitudes_electricas and valores_dimensiones:
+        # Llamar a la función de solución del circuito magnético
+        resultado = solucion_circuitomagentico(valores_magnitudes_electricas, valores_dimensiones, funcion_H_B)
+        
+        # Mostrar los resultados en pantalla
+        messagebox.showinfo("Resultado", f"Solución del circuito magnético: {resultado}")
 
+# Función para obtener la ecuación B-H y asignarla a la variable global
+def obtener_ecuacion_bh():
+    global funcion_H_B
+    funcion_H_B = obtener_curva_hb_gui(ventana)  # Asegúrate de que esto devuelva la ecuación correctamente
+    if funcion_H_B:
+        messagebox.showinfo("Éxito", "Ecuación B-H generada correctamente.")
+    else:
+        messagebox.showerror("Error", "No se pudo generar la ecuación B-H.")
 
+# Botón para enviar los datos
+tk.Button(ventana, text="Enviar", command=procesar_datos).grid(row=15, column=0, columnspan=3, pady=10)
+
+# Botón para abrir la ventana de Curva H-B y obtener la ecuación B-H
+tk.Button(ventana, text="Ingresar Curva H-B", command=obtener_ecuacion_bh).grid(row=16, column=0, columnspan=3, pady=10)
 
 # Ejecutar la aplicación
 ventana.mainloop()

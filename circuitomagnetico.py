@@ -15,7 +15,7 @@ def dispersion_flujo_real(coe_dispersion, flujo_entrehierro):
     return  (1 + coe_dispersion)/(flujo_entrehierro)
     
 #Aqui es la funcion de la solucion principal del circuito
-def solucion_circuitomagentico(valores_magnitudes_electricas, valores_dimensiones):
+def solucion_circuitomagentico(valores_magnitudes_electricas, valores_dimensiones, funcion_H_B):
     bobina1_bandera = False
     flujo1_bandera = False
 
@@ -42,7 +42,7 @@ def solucion_circuitomagentico(valores_magnitudes_electricas, valores_dimensione
     B_flujoe = flujo_E / Sc
 
     #Obtengo el valor de H del flujo del entre hierro con la funcion B-H
-    H = funcion_B_H(B_flujoe)
+    H = funcion_H_B(B_flujoe)
 
     #Obtengo la fmm de la reluctancia de la barra
     fmm_reluctancia_barra = H * L3
