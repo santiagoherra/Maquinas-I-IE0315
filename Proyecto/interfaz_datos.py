@@ -146,6 +146,7 @@ def validar_formato_ecuacion(texto):
 def obtener_curva_hb_gui(parent_ventana):
     ventana_hb = tk.Toplevel(parent_ventana)
     ventana_hb.title("Curva H-B")
+    ventana_hb.geometry("700x300")
     
     def seleccionar_opcion():
         opcion = hb_opcion.get()
@@ -181,8 +182,3 @@ def obtener_curva_hb_gui(parent_ventana):
     )).pack()
 
 
-# Crear ventana principal
-#ventana = tk.Tk()
-#ventana.title("Formulario de Datos")
-#tk.Button(ventana, text="Ingresar Curva H-B", command=lambda: obtener_curva_hb_gui(ventana)).pack()
-#ventana.mainloop()

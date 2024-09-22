@@ -68,7 +68,7 @@ def procesar_datos():
     )
     
     # Asegurarse que no haya errores en los datos antes de continuar
-    if valores_magnitudes_electricas and valores_dimensiones:
+    if valores_magnitudes_electricas and valores_dimensiones and funcion_H_B:
         # Llamar a la función de solución del circuito magnético
         resultado = solucion_circuitomagentico(valores_magnitudes_electricas, valores_dimensiones, funcion_H_B)
         
@@ -79,10 +79,11 @@ def procesar_datos():
 def obtener_ecuacion_bh():
     global funcion_H_B
     funcion_H_B = obtener_curva_hb_gui(ventana)  # Asegúrate de que esto devuelva la ecuación correctamente
-    if funcion_H_B:
-        messagebox.showinfo("Éxito", "Ecuación B-H generada correctamente.")
-    else:
-        messagebox.showerror("Error", "No se pudo generar la ecuación B-H.")
+
+    #if funcion_H_B:
+        #messagebox.showinfo("Éxito", "Ecuación B-H generada correctamente.")
+    #else:
+        #messagebox.showerror("Error", "No se pudo generar la ecuación B-H.")
 
 # Botón para enviar los datos
 tk.Button(ventana, text="Enviar", command=procesar_datos).grid(row=15, column=0, columnspan=3, pady=10)

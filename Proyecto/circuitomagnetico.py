@@ -8,22 +8,25 @@ def reluctancia(largo, u_o, superficie, f_apilado):
     re = largo/(u_o * superficie * f_apilado)
     return re
 
-def dispersion_areaefectiva(area, porcentaje_deformacion):
-    return area * (1 + porcentaje_deformacion / 100)
-
-def dispersion_flujo_real(coe_dispersion, flujo_entrehierro):
-    return  (1 + coe_dispersion)/(flujo_entrehierro)
-    
 #Aqui es la funcion de la solucion principal del circuito
 def solucion_circuitomagentico(valores_magnitudes_electricas, valores_dimensiones, funcion_H_B):
     bobina1_bandera = False
     flujo1_bandera = False
 
     #asignar valores a variables de magnitudes electricas
-    N_1, N_2, I_1, I_2, flujo_E, f_apilado = valores_magnitudes_electricas
+    N_1, N_2, I_1, I_2, flujo_E, f_apilado, coe_dispersion = valores_magnitudes_electricas
 
     #asignar valores a variables de magnitudes electricas
-    L3, LE, Sc, SL, A, L1, L2 = valores_dimensiones
+    L3, LE, Sc, SL, A, L1, L2, defor_area= valores_dimensiones
+
+    #corregir el flujo E si si dieron el coeficiente de dispersion
+    if coe_dispersion != None:
+        flujo_E = flujo_E/coe_dispersion
+
+    #Si la persona dio el porcentaje de deformacion del area. Se usa elif porque solo se tiene que 
+    #aplicar uno creo.
+    elif defor_area != None:
+        A = A * (1 + defor_area / 100)
 
     #Se seleccionado cual bobina es la que se le dio el valor de corriente osea i1 o i2
     if I_1:
