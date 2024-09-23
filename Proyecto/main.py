@@ -7,7 +7,7 @@ from tkinter import ttk, messagebox, PhotoImage
 
 #Archivos utilizados
 from interfaz_datos import recoger_datos, obtener_curva_hb_gui, generar_ecuacion_bh
-from circuitomagnetico import solucion_circuitomagentico
+from circuitomagnetico import solucion
 
 
 # Crear la ventana principal de Tkinter
@@ -70,7 +70,7 @@ def procesar_datos():
     # Asegurarse que no haya errores en los datos antes de continuar
     if valores_magnitudes_electricas and valores_dimensiones and funcion_H_B:
         # Llamar a la función de solución del circuito magnético
-        resultado = solucion_circuitomagentico(valores_magnitudes_electricas, valores_dimensiones, funcion_H_B)
+        resultado = solucion(valores_magnitudes_electricas, valores_dimensiones)
         
         # Mostrar los resultados en pantalla
         messagebox.showinfo("Resultado", f"Solución del circuito magnético: {resultado}")
