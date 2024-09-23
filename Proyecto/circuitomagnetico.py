@@ -1,9 +1,11 @@
 #Este es el archivo el cual se dara para poder crear las funciones necesarias para poder resolver el circuito magnetico.
 
 #librerias a utilizar
+import re
 import tkinter as tk 
 from tkinter import messagebox, PhotoImage, ttk
 import math
+from scipy.optimize import curve_fit
 
 class CircuitoMagnetico:
 
@@ -12,7 +14,6 @@ class CircuitoMagnetico:
         self.ventana.title("Formulario de Datos - Circuito Magnético")
         
         # Inicializar los atributos para almacenar los valores de los inputs
-        #Donde estaran las varialbles a utilizar en el circuito.
         self.valores_magnitudes_electricas = None
         self.valores_dimensiones = None
         self.funcion_a = None
@@ -23,17 +24,146 @@ class CircuitoMagnetico:
         self.resultado_I2 = None
         self.resultado_flujo1 = None
         self.resultado_flujo2 = None
-
         
         # Crear las entradas gráficas
         self.crear_entradas()
 
     def funcion_B_H(self, H):
-        return (self.funcion_a* H) / (1 + self.funcion_b * H)
+        return (self.funcion_a * H) / (1 + self.funcion_b * H)
 
     def funcion_H_B(self, B):
-        return  B / (self.funcion_a - self.funcion_b * B)
+        return B / (self.funcion_a - self.funcion_b * B)
 
+    def generar_ecuacion_bh(self, H_values, B_values):
+        if len(H_values) < 2 or len(B_values) < 2:
+            messagebox.showerror("Error", "Se requieren al menos dos pares de valores H y B para ajustar la curva.")
+            return None, None
+
+        try:
+            # Estimar los valores iniciales
+            p0 = [max(B_values), max(H_values) / 2]
+            popt, _ = curve_fit(self.funcion_bh, H_values, B_values, p0=p0)
+            self.funcion_a, self.funcion_b = popt
+
+            ecuacion_str = f"{self.funcion_a:.4f} * H / ({self.funcion_b:.4f} + H)"
+            messagebox.showinfo("Ecuación B(H)", f"La ecuación B(H) es: {ecuacion_str}")
+            return self.funcion_a, self.funcion_b
+
+        except (RuntimeError, ValueError) as e:
+            messagebox.showerror("Error", f"No se pudo ajustar la curva: {str(e)}.")
+            return None, None
+
+    def funcion_bh(self, H, a, b):
+        return a * H / (b + H)
+
+    def validar_formato_tabla(self, texto):
+        texto = texto.strip()
+        if texto.endswith(";"):
+            texto = texto[:-1].strip()
+
+        patron = r'^\d+(\.\d+)?\s*,\s*\d+(\.\d+)?\s*(;\s*\d+(\.\d+)?\s*,\s*\d+(\.\d+)?\s*)*$'
+        if not re.fullmatch(patron, texto):
+            messagebox.showerror("Error de formato", "El formato debe ser: H1,B1; H2,B2; con números separados por comas y punto y coma.")
+            return False
+
+        return True
+
+    def validar_formato_ecuacion(self, texto):
+        texto = texto.replace('h', 'H').upper()
+        permitido = set("H0123456789+-*/.= ")
+        
+        for char in texto:
+            if char not in permitido:
+                messagebox.showerror("Error de formato", "Solo se permiten números, la letra 'H', y operadores matemáticos.")
+                return None, None
+
+        patron = r"B\s*=\s*([\d.]+)\s*\*\s*H\s*/\s*\(([\d.]+)\s*\+\s*H\)"
+        coincidencia = re.match(patron, texto)
+        
+        if coincidencia:
+            self.funcion_a = float(coincidencia.group(1))
+            self.funcion_b = float(coincidencia.group(2))
+            return self.funcion_a, self.funcion_b
+        else:
+            messagebox.showerror("Error de formato", "El formato debe ser: B = a * H / (b + H)")
+            return None, None
+
+    def obtener_curva_hb_gui(self):
+        ventana_hb = tk.Toplevel(self.ventana)
+        ventana_hb.title("Curva H-B")
+        ventana_hb.geometry("700x300")
+        
+        def seleccionar_opcion():
+            opcion = hb_opcion.get()
+            if opcion == "tabla":
+                label_tabla.pack(side="top", fill="x")
+                entry_tabla.pack(side="top", fill="x")
+                label_ecuacion.pack_forget()
+                entry_ecuacion.pack_forget()
+            elif opcion == "ecuacion":
+                label_ecuacion.pack(side="top", fill="x")
+                entry_ecuacion.pack(side="top", fill="x")
+                label_tabla.pack_forget()
+                entry_tabla.pack_forget()
+
+        hb_opcion = tk.StringVar(value="tabla")
+        tk.Radiobutton(ventana_hb, text="Tabla de datos", variable=hb_opcion, value="tabla", command=seleccionar_opcion).pack()
+        tk.Radiobutton(ventana_hb, text="Ecuación", variable=hb_opcion, value="ecuacion", command=seleccionar_opcion).pack()
+
+        label_tabla = tk.Label(ventana_hb, text="Ingrese los puntos H-B (Ejemplo: H1,B1; H2,B2...)")
+        entry_tabla = tk.Entry(ventana_hb)
+
+        label_ecuacion = tk.Label(ventana_hb, text="Ingrese la ecuación para H-B (Ejemplo: B = a * H / (b + H))")
+        entry_ecuacion = tk.Entry(ventana_hb)
+
+        def procesar_datos():
+            texto_tabla = entry_tabla.get().strip() if hb_opcion.get() == "tabla" else None
+            texto_ecuacion = entry_ecuacion.get().strip() if hb_opcion.get() == "ecuacion" else None
+            
+            if texto_tabla and self.validar_formato_tabla(texto_tabla):
+                H_values, B_values = self.procesar_datos_tabla(texto_tabla)
+                if H_values and B_values:
+                    self.generar_ecuacion_bh(H_values, B_values)
+            
+            if texto_ecuacion:
+                self.validar_formato_ecuacion(texto_ecuacion)
+
+        tk.Button(ventana_hb, text="Aceptar", command=procesar_datos).pack()
+
+    def procesar_datos_tabla(self, texto_tabla):
+        pares_hb = texto_tabla.split(";")
+        H_values = []
+        B_values = []
+
+        for par in pares_hb:
+            if par.strip():
+                try:
+                    H, B = map(float, par.split(","))
+                    H_values.append(H)
+                    B_values.append(B)
+                except ValueError:
+                    messagebox.showerror("Error", f"Formato inválido en el par: {par}")
+                    return None, None
+
+        return H_values, B_values
+
+    # Crear las entradas gráficas y otros métodos ya existentes
+    def crear_entradas(self):
+        # El resto de la función de crear_entradas, aquí puedes agregar un botón para la curva H-B
+        self.entry_N1, _ = self.crear_entrada("N1 [vueltas]", 0)
+        # ... (el resto de tus entradas)
+        tk.Button(self.ventana, text="Ajustar Curva H-B", command=self.obtener_curva_hb_gui).grid(row=16, column=0, columnspan=3, pady=10)
+
+    def crear_entrada(self, label, fila, tipo_unidad=None):
+        tk.Label(self.ventana, text=label).grid(row=fila, column=0, padx=5, pady=5)
+        entry = tk.Entry(self.ventana)
+        entry.grid(row=fila, column=1, padx=5, pady=5)
+        if tipo_unidad:
+            combobox = ttk.Combobox(self.ventana, values=tipo_unidad)
+            combobox.grid(row=fila, column=2)
+            combobox.set(tipo_unidad[0])  
+            return entry, combobox
+        return entry, None
 
     def solucion(self):
         # Inicializar banderas para verificar qué bobina está activa y qué flujo se ha calculado
