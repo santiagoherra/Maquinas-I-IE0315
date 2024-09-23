@@ -5,62 +5,78 @@ import re
 import tkinter as tk 
 from tkinter import messagebox, PhotoImage, ttk
 import math
-from scipy.optimize import curve_fit
+from scipy.optimize import curve_fit  # Para ajuste de curvas no lineales
 
+# Clase principal para gestionar el circuito magnético y sus cálculos
 class CircuitoMagnetico:
 
     def __init__(self, root):
+        # Inicializa la ventana principal y los atributos
         self.ventana = root
         self.ventana.title("Formulario de Datos - Circuito Magnético")
         
         # Inicializar los atributos para almacenar los valores de los inputs
-        self.valores_magnitudes_electricas = None
-        self.valores_dimensiones = None
-        self.funcion_a = None
-        self.funcion_b = None
+        self.valores_magnitudes_electricas = None  # Lista para almacenar valores eléctricos
+        self.valores_dimensiones = None  # Lista para almacenar dimensiones del circuito
+        self.funcion_a = None  # Coeficiente a para la curva B-H
+        self.funcion_b = None  # Coeficiente b para la curva B-H
 
-        #variables finales del circuito para mostrar resultado.
+        # Variables finales del circuito para mostrar resultados
         self.resultado_I1 = None
         self.resultado_I2 = None
         self.resultado_flujo1 = None
         self.resultado_flujo2 = None
         
-        # Crear las entradas gráficas
+        # Crear las entradas gráficas para el usuario
         self.crear_entradas()
 
+    # Método para calcular la función B en función de H usando la fórmula ajustada
     def funcion_B_H(self, H):
-        return (self.funcion_a * H) / (1 + self.funcion_b * H)
+        return (self.funcion_a * H) / (1 + self.funcion_b * H)  # Ecuación ajustada de la curva B-H
 
+    # Método para calcular H en función de B usando la ecuación ajustada
     def funcion_H_B(self, B):
-        return B / (self.funcion_a - self.funcion_b * B)
+        return B / (self.funcion_a - self.funcion_b * B)  # Ecuación inversa de B-H
 
+    # Método para generar la ecuación B-H utilizando el ajuste de curvas
     def generar_ecuacion_bh(self, H_values, B_values):
+        # Verificar si hay suficientes puntos para hacer el ajuste
         if len(H_values) < 2 or len(B_values) < 2:
             messagebox.showerror("Error", "Se requieren al menos dos pares de valores H y B para ajustar la curva.")
             return None, None
 
         try:
-            # Estimar los valores iniciales
-            p0 = [max(B_values), max(H_values) / 2]
+            # Estimación de valores iniciales para el ajuste
+            p0 = [max(B_values), max(H_values) / 2]  # Estimación inicial basada en los valores máximos de H y B
+            
+            # Realizar el ajuste de la curva B(H) = a * H / (b + H)
             popt, _ = curve_fit(self.funcion_bh, H_values, B_values, p0=p0)
+            
+            # Almacenar los valores ajustados de 'a' y 'b'
             self.funcion_a, self.funcion_b = popt
 
+            # Mostrar la ecuación ajustada al usuario
             ecuacion_str = f"{self.funcion_a:.4f} * H / ({self.funcion_b:.4f} + H)"
             messagebox.showinfo("Ecuación B(H)", f"La ecuación B(H) es: {ecuacion_str}")
             return self.funcion_a, self.funcion_b
 
         except (RuntimeError, ValueError) as e:
+            # Manejar errores en caso de que el ajuste falle
             messagebox.showerror("Error", f"No se pudo ajustar la curva: {str(e)}.")
             return None, None
 
+    # Método de ajuste de la curva B(H) con parámetros 'a' y 'b'
     def funcion_bh(self, H, a, b):
-        return a * H / (b + H)
+        return a * H / (b + H)  # Esta es la forma de la ecuación que estamos ajustando
 
+    # Método para validar si el texto de la tabla está en el formato correcto
     def validar_formato_tabla(self, texto):
         texto = texto.strip()
+        # Eliminar un punto y coma final si existe
         if texto.endswith(";"):
             texto = texto[:-1].strip()
 
+        # Patrón regex para validar la estructura "H1,B1; H2,B2; ..."
         patron = r'^\d+(\.\d+)?\s*,\s*\d+(\.\d+)?\s*(;\s*\d+(\.\d+)?\s*,\s*\d+(\.\d+)?\s*)*$'
         if not re.fullmatch(patron, texto):
             messagebox.showerror("Error de formato", "El formato debe ser: H1,B1; H2,B2; con números separados por comas y punto y coma.")
@@ -68,19 +84,24 @@ class CircuitoMagnetico:
 
         return True
 
+    # Validar si la ecuación ingresada está en el formato correcto
     def validar_formato_ecuacion(self, texto):
+        # Convertir todo a mayúsculas y reemplazar 'h' con 'H' para evitar errores de formato
         texto = texto.replace('h', 'H').upper()
         permitido = set("H0123456789+-*/.= ")
         
+        # Verificar que solo se usen caracteres permitidos
         for char in texto:
             if char not in permitido:
                 messagebox.showerror("Error de formato", "Solo se permiten números, la letra 'H', y operadores matemáticos.")
                 return None, None
 
+        # Patrón para validar el formato esperado de la ecuación
         patron = r"B\s*=\s*([\d.]+)\s*\*\s*H\s*/\s*\(([\d.]+)\s*\+\s*H\)"
         coincidencia = re.match(patron, texto)
         
         if coincidencia:
+            # Si coincide, extraer los valores de 'a' y 'b'
             self.funcion_a = float(coincidencia.group(1))
             self.funcion_b = float(coincidencia.group(2))
             return self.funcion_a, self.funcion_b
@@ -88,11 +109,13 @@ class CircuitoMagnetico:
             messagebox.showerror("Error de formato", "El formato debe ser: B = a * H / (b + H)")
             return None, None
 
+    # Método para abrir una ventana que permite ingresar datos para la curva H-B
     def obtener_curva_hb_gui(self):
         ventana_hb = tk.Toplevel(self.ventana)
         ventana_hb.title("Curva H-B")
         ventana_hb.geometry("700x300")
         
+        # Mostrar u ocultar entradas según la opción seleccionada (tabla o ecuación)
         def seleccionar_opcion():
             opcion = hb_opcion.get()
             if opcion == "tabla":
@@ -106,16 +129,19 @@ class CircuitoMagnetico:
                 label_tabla.pack_forget()
                 entry_tabla.pack_forget()
 
+        # Crear las opciones de selección para el usuario (tabla o ecuación)
         hb_opcion = tk.StringVar(value="tabla")
         tk.Radiobutton(ventana_hb, text="Tabla de datos", variable=hb_opcion, value="tabla", command=seleccionar_opcion).pack()
         tk.Radiobutton(ventana_hb, text="Ecuación", variable=hb_opcion, value="ecuacion", command=seleccionar_opcion).pack()
 
+        # Crear las etiquetas y entradas de texto
         label_tabla = tk.Label(ventana_hb, text="Ingrese los puntos H-B (Ejemplo: H1,B1; H2,B2...)")
         entry_tabla = tk.Entry(ventana_hb)
 
         label_ecuacion = tk.Label(ventana_hb, text="Ingrese la ecuación para H-B (Ejemplo: B = a * H / (b + H))")
         entry_ecuacion = tk.Entry(ventana_hb)
 
+        # Procesar la entrada de datos cuando el usuario haga clic en "Aceptar"
         def procesar_datos():
             texto_tabla = entry_tabla.get().strip() if hb_opcion.get() == "tabla" else None
             texto_ecuacion = entry_ecuacion.get().strip() if hb_opcion.get() == "ecuacion" else None
@@ -130,11 +156,13 @@ class CircuitoMagnetico:
 
         tk.Button(ventana_hb, text="Aceptar", command=procesar_datos).pack()
 
+    # Método para procesar la cadena de texto de la tabla y convertirla en listas de H y B
     def procesar_datos_tabla(self, texto_tabla):
         pares_hb = texto_tabla.split(";")
         H_values = []
         B_values = []
 
+        # Separar cada par y convertirlos en floats
         for par in pares_hb:
             if par.strip():
                 try:
@@ -147,13 +175,14 @@ class CircuitoMagnetico:
 
         return H_values, B_values
 
-    # Crear las entradas gráficas y otros métodos ya existentes
+    # Método para crear las entradas de la interfaz gráfica y otros controles
     def crear_entradas(self):
-        # El resto de la función de crear_entradas, aquí puedes agregar un botón para la curva H-B
+        # Crear las entradas requeridas para la interfaz de usuario
         self.entry_N1, _ = self.crear_entrada("N1 [vueltas]", 0)
-        # ... (el resto de tus entradas)
+        # Añadir un botón para ajustar la curva H-B
         tk.Button(self.ventana, text="Ajustar Curva H-B", command=self.obtener_curva_hb_gui).grid(row=16, column=0, columnspan=3, pady=10)
 
+    # Método auxiliar para crear una entrada de texto y un combobox opcional para unidades
     def crear_entrada(self, label, fila, tipo_unidad=None):
         tk.Label(self.ventana, text=label).grid(row=fila, column=0, padx=5, pady=5)
         entry = tk.Entry(self.ventana)
@@ -161,7 +190,7 @@ class CircuitoMagnetico:
         if tipo_unidad:
             combobox = ttk.Combobox(self.ventana, values=tipo_unidad)
             combobox.grid(row=fila, column=2)
-            combobox.set(tipo_unidad[0])  
+            combobox.set(tipo_unidad[0])  # Seleccionar por defecto la primera unidad
             return entry, combobox
         return entry, None
 
