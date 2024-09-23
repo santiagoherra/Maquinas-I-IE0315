@@ -136,30 +136,6 @@ class CircuitoMagnetico:
 
     #METODOS PARA OBTENER LOS DATOS Y VALIDAR LOS DATOS
 
-    def validar_entrada(self, entry, campo_nombre, permitir_negativo=False, condicion=None):
-        try:
-            valor = float(entry.get().strip())  # Eliminar espacios en blanco
-            if not permitir_negativo and valor < 0:
-                raise ValueError
-            if condicion and not condicion(valor):
-                raise ValueError
-            return valor
-        except ValueError:
-            mensaje_error = f"Valor no válido o fuera de rango en el campo: {campo_nombre}"
-            if not permitir_negativo:
-                mensaje_error += " (no se permiten valores negativos)"
-            messagebox.showerror("Error", mensaje_error)
-            return None
-        
-    def convertir_a_unidades(self, valor, unidad, tipo):
-        conversiones = {
-            'longitud': {'cm': 100, 'mm': 1000},
-            'area': {'cm²': 10000, 'mm²': 1000000}
-        }
-        if unidad in conversiones[tipo]:
-            return valor / conversiones[tipo][unidad]
-        return valor
-    
     def crear_entradas(self):
         # Función para crear una entrada con un combobox para la unidad
         def crear_entrada(label, fila, tipo_unidad=None):
@@ -191,12 +167,37 @@ class CircuitoMagnetico:
         self.entry_porcentaje_deformacion, _ = crear_entrada("Deformación Área [%]", 14)
 
         #IMPLEMENTACION DE LA FIGURA
-        imagen_circuito = PhotoImage(file="Proyecto/figura_circuito.png")
-        label_imagen_circuito = tk.Label(self.ventana, image=imagen_circuito)
+        self.imagen_circuito = PhotoImage(file="Proyecto/figura_circuito.png")
+        label_imagen_circuito = tk.Label(self.ventana, image=self.imagen_circuito)
         label_imagen_circuito.grid(row=0, column=4, rowspan=15, padx=20, pady=20, sticky='n')
 
         # Botones para procesar datos
         tk.Button(self.ventana, text="Enviar", command=self.procesar_datos).grid(row=15, column=0, columnspan=3, pady=10)
+
+    def validar_entrada(self, entry, campo_nombre, permitir_negativo=False, condicion=None):
+        try:
+            valor = float(entry.get().strip())  # Eliminar espacios en blanco
+            if not permitir_negativo and valor < 0:
+                raise ValueError
+            if condicion and not condicion(valor):
+                raise ValueError
+            return valor
+        except ValueError:
+            mensaje_error = f"Valor no válido o fuera de rango en el campo: {campo_nombre}"
+            if not permitir_negativo:
+                mensaje_error += " (no se permiten valores negativos)"
+            messagebox.showerror("Error", mensaje_error)
+            return None
+        
+    def convertir_a_unidades(self, valor, unidad, tipo):
+        conversiones = {
+            'longitud': {'cm': 100, 'mm': 1000},
+            'area': {'cm²': 10000, 'mm²': 1000000}
+        }
+        if unidad in conversiones[tipo]:
+            return valor / conversiones[tipo][unidad]
+        return valor
+
 
     def recoger_datos(self):
         # Validar los campos y convertir unidades
