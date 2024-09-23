@@ -358,12 +358,12 @@ class CircuitoMagnetico:
             return None, None
 
         # Guardar los valores obtenidos en listas
-        self.valores_magnitudes_electricas = [N1, N2, I1, I2, flujo_entre, coeficiente_dispersion, porcentaje_deformacion, factor_apilado]
-        self.valores_dimensiones = [L1, L2, L3, LE, Sc, SL, A]
+        self.valores_magnitudes_electricas = [N1, N2, I1, I2, flujo_entre, coeficiente_dispersion, factor_apilado]
+        self.valores_dimensiones = [L1, L2, L3, LE, Sc, SL, A, porcentaje_deformacion]
     
     def procesar_datos(self):
         # Recolectar los datos validados y convertidos
-        self.valores_magnitudes_electricas, self.valores_dimensiones = self.recoger_datos()
+        self.recoger_datos()
 
         if self.valores_magnitudes_electricas and self.valores_dimensiones:
             self.solucion()
