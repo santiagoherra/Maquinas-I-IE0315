@@ -45,6 +45,9 @@ class CircuitoMagnetico:
             popt, _ = curve_fit(self.funcion_bh, H_values, B_values, p0=p0)
             self.funcion_a, self.funcion_b = popt
 
+            # Mostrar los valores de a y b
+            print(f"Valores ajustados: a = {self.funcion_a}, b = {self.funcion_b}")
+            
             ecuacion_str = f"{self.funcion_a:.4f} * H / ({self.funcion_b:.4f} + H)"
             messagebox.showinfo("Ecuación B(H)", f"La ecuación B(H) es: {ecuacion_str}")
             return self.funcion_a, self.funcion_b
@@ -52,6 +55,7 @@ class CircuitoMagnetico:
         except (RuntimeError, ValueError) as e:
             messagebox.showerror("Error", f"No se pudo ajustar la curva: {str(e)}.")
             return None, None
+
 
     def funcion_bh(self, H, a, b):
         return a * H / (b + H)
@@ -69,23 +73,27 @@ class CircuitoMagnetico:
         return True
 
     def validar_formato_ecuacion(self, texto):
+        # Convertir 'h' minúscula a 'H' y asegurar que todo esté en mayúsculas
         texto = texto.replace('h', 'H').upper()
-        permitido = set("H0123456789+-*/.= ")
         
+        permitido = set("H0123456789+-*/.=() ")
         for char in texto:
             if char not in permitido:
                 messagebox.showerror("Error de formato", "Solo se permiten números, la letra 'H', y operadores matemáticos.")
                 return None, None
 
-        patron = r"B\s*=\s*([\d.]+)\s*\*\s*H\s*/\s*\(([\d.]+)\s*\+\s*H\)"
+        # Expresión regular modificada para aceptar ecuaciones con o sin "B ="
+        patron = r"(?:B\s*=\s*)?([\d.]+)\s*\*\s*H\s*/\s*\(([\d.]+)\s*\+\s*H\)"
         coincidencia = re.match(patron, texto)
         
         if coincidencia:
             self.funcion_a = float(coincidencia.group(1))
             self.funcion_b = float(coincidencia.group(2))
-            #return self.funcion_a, self.funcion_b
+            print(f"Valores obtenidos: a = {self.funcion_a}, b = {self.funcion_b}")
+        
+            return self.funcion_a, self.funcion_b
         else:
-            messagebox.showerror("Error de formato", "El formato debe ser: B = a * H / (b + H)")
+            messagebox.showerror("Error de formato", "El formato debe ser: B = a * H / (b + H) o a * H / (b + H)")
             return None, None
 
     def obtener_curva_hb_gui(self):
@@ -120,15 +128,21 @@ class CircuitoMagnetico:
             texto_tabla = entry_tabla.get().strip() if hb_opcion.get() == "tabla" else None
             texto_ecuacion = entry_ecuacion.get().strip() if hb_opcion.get() == "ecuacion" else None
             
-            if texto_tabla and self.validar_formato_tabla(texto_tabla):
+            if hb_opcion.get() == "tabla" and texto_tabla and self.validar_formato_tabla(texto_tabla):
                 H_values, B_values = self.procesar_datos_tabla(texto_tabla)
                 if H_values and B_values:
                     self.generar_ecuacion_bh(H_values, B_values)
             
-            if texto_ecuacion:
+            elif hb_opcion.get() == "ecuacion" and texto_ecuacion:
                 self.validar_formato_ecuacion(texto_ecuacion)
+            
+            else:
+                messagebox.showerror("Error", "Debe ingresar datos válidos en la tabla o la ecuación antes de continuar.")
 
         tk.Button(ventana_hb, text="Aceptar", command=procesar_datos).pack()
+
+        # Mostrar la opción seleccionada al principio
+        seleccionar_opcion()
 
     def procesar_datos_tabla(self, texto_tabla):
         pares_hb = texto_tabla.split(";")
@@ -141,6 +155,7 @@ class CircuitoMagnetico:
                     H, B = map(float, par.split(","))
                     H_values.append(H)
                     B_values.append(B)
+
                 except ValueError:
                     messagebox.showerror("Error", f"Formato inválido en el par: {par}")
                     return None, None
@@ -321,7 +336,8 @@ class CircuitoMagnetico:
 
         # Botones para procesar datos
         tk.Button(self.ventana, text="Enviar", command=self.procesar_datos).grid(row=15, column=0, columnspan=3, pady=10)
-
+        tk.Button(self.ventana, text="Ajustar Curva H-B", command=self.obtener_curva_hb_gui).grid(row=16, column=0, columnspan=3, pady=10)
+   
     def validar_entrada(self, entry, campo_nombre, permitir_negativo=False, condicion=None):
         try:
             valor = float(entry.get().strip())  # Eliminar espacios en blanco
