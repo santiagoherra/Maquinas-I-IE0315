@@ -233,8 +233,12 @@ class CircuitoMagnetico:
 
         # Si la bobina 1 estaba activa
         if bobina1_bandera:
+            #Si el flujo cambia de sentido se cambio el signo en la LTK
+            if flujo_E_bandera:
+                 H_flujo_1 = (fmm_bobina1 + fmm_barra_central_total) / L1
+            else:
             # Calcular el campo magnético en la malla 1 (restando FMM total de la FMM de la bobina 1)
-            H_flujo_1 = (fmm_bobina1 - fmm_barra_central_total) / L1
+                H_flujo_1 = (fmm_bobina1 - fmm_barra_central_total) / L1
 
             # Obtener la densidad de flujo magnético B para la malla 1 usando la función B-H
             B_flujo1 = self.funcion_B_H(H_flujo_1)
@@ -253,8 +257,12 @@ class CircuitoMagnetico:
             # Marcar que se ha calculado el flujo 1
             flujo1_bandera = True
         else:
+            #Si el flujo cambia de sentido se cambio el signo en la LTK
+            if flujo_E_bandera:
+                 H_flujo_1 = (fmm_bobina1 + fmm_barra_central_total) / L1
+            else:
             # Si la bobina 2 estaba activa, calcular el campo magnético en la malla 2
-            H_flujo_2 = (fmm_bobina2 - fmm_barra_central_total) / L1
+                H_flujo_2 = (fmm_bobina2 - fmm_barra_central_total) / L1
 
             # Obtener la densidad de flujo magnético B para la malla 2
             B_flujo2 = self.funcion_B_H(H_flujo_2)
