@@ -83,7 +83,7 @@ class CircuitoMagnetico:
         if coincidencia:
             self.funcion_a = float(coincidencia.group(1))
             self.funcion_b = float(coincidencia.group(2))
-            return self.funcion_a, self.funcion_b
+            #return self.funcion_a, self.funcion_b
         else:
             messagebox.showerror("Error de formato", "El formato debe ser: B = a * H / (b + H)")
             return None, None
@@ -148,7 +148,7 @@ class CircuitoMagnetico:
         return H_values, B_values
 
     # Crear las entradas gráficas y otros métodos ya existentes
-    def crear_entradas(self):
+    def crear_entradas_hb(self):
         # El resto de la función de crear_entradas, aquí puedes agregar un botón para la curva H-B
         self.entry_N1, _ = self.crear_entrada("N1 [vueltas]", 0)
         # ... (el resto de tus entradas)
