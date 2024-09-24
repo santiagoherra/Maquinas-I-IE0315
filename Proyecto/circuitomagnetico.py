@@ -169,6 +169,7 @@ class CircuitoMagnetico:
         # Inicializar banderas para verificar qué bobina está activa y qué flujo se ha calculado
         bobina1_bandera = False
         flujo1_bandera = False
+        flujo_E_bandera = False
 
         # Asignar valores a las variables de magnitudes eléctricas (entradas del usuario)
         N_1, N_2, I_1, I_2, flujo_E, f_apilado, coe_dispersion = self.valores_magnitudes_electricas
@@ -177,13 +178,20 @@ class CircuitoMagnetico:
         L3, LE, Sc, SL, A, L1, L2, defor_area = self.valores_dimensiones
 
         # Corregir el flujo entre las bobinas si se proporcionó un coeficiente de dispersión
-        if coe_dispersion is not None:
-            flujo_E = flujo_E / coe_dispersion  # Se ajusta el flujo para incluir la dispersión
+        flujo_E = flujo_E / coe_dispersion  # Se ajusta el flujo para incluir la dispersión
 
         # Corregir el área efectiva si se dio un porcentaje de deformación del área
         if defor_area is not None:
             Sc = Sc * (1 + defor_area / 100)  # Ajuste del área en base a la deformación
+        else:
+            #Se el agrega el largo extra del entre hierro para simular la deformacion del area.
+            #Esto segun lo que dijo en clase.
+            Sc = Sc + LE
+            A = A + LE
 
+        if flujo_E < 0:
+            flujo_E = abs(flujo_E)
+            flujo_E_bandera = True
         # Determinar si se proporcionó la corriente I_1 o I_2
         if I_1:
             # Si se dio I_1, calcular la FMM (fuerza magnetomotriz) de la bobina 1
@@ -219,8 +227,13 @@ class CircuitoMagnetico:
             # Calcular el flujo en la malla 1
             flujo1 = B_flujo1 * SL * f_apilado  # Flujo = B * área * factor de apilado
 
-            # El flujo en la malla 2 es el flujo total menos el flujo de la malla 1
-            flujo2 = flujo_E - flujo1
+            #Se cambia el sentido de la LCK porque la bandera de flujo fue activada indicando que el flujo 
+            #va en sentido contrario.
+            if flujo_E_bandera:
+                flujo2 = flujo_E + flujo1
+            else:
+                # El flujo en la malla 2 es el flujo total menos el flujo de la malla 1
+                flujo2 = flujo_E - flujo1
 
             # Marcar que se ha calculado el flujo 1
             flujo1_bandera = True
@@ -233,9 +246,14 @@ class CircuitoMagnetico:
 
             # Calcular el flujo en la malla 2
             flujo2 = B_flujo2 * SL * f_apilado
-
-            # El flujo en la malla 1 es el flujo total menos el flujo de la malla 2
-            flujo1 = flujo_E - flujo2
+            
+            #Se cambi el sentido de la LCK porque la bandera de flujo fue activada indicando que el flujo 
+            #va en sentido contrario.
+            if flujo_E_bandera:
+                flujo1 = flujo_E + flujo2
+            else:
+                # El flujo en la malla 2 es el flujo total menos el flujo de la malla 1
+                flujo1 = flujo_E - flujo2
 
         # Si el flujo 1 ha sido calculado
         if flujo1_bandera:
