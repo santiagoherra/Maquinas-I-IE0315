@@ -198,7 +198,8 @@ class CircuitoMagnetico:
         # Corregir el área efectiva si se dio un porcentaje de deformación del área
         if defor_area is not None:
             Sc = Sc * (1 + defor_area / 100)  # Ajuste del área en base a la deformación
-        else:
+
+        elif Sc != 0:
             #Se el agrega el largo extra del entre hierro para simular la deformacion del area.
             #Esto segun lo que dijo en clase.
             Sc = Sc + LE
@@ -401,7 +402,7 @@ class CircuitoMagnetico:
 
         # Guardar los valores obtenidos en listas
         self.valores_magnitudes_electricas = [N1, N2, I1, I2, flujo_entre, coeficiente_dispersion, factor_apilado]
-        self.valores_dimensiones = [L1, L2, L3, LE, Sc, SL, A, ]
+        self.valores_dimensiones = [L1, L2, L3, LE, Sc, SL, A, porcentaje_deformacion]
     
     def procesar_datos(self):
         # Recolectar los datos validados y convertidos
