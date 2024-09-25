@@ -400,8 +400,15 @@ class CircuitoMagnetico:
 
         if self.valores_magnitudes_electricas and self.valores_dimensiones:
             self.solucion()
-            messagebox.showinfo(f"RESULTADO:\nCorriente 1 = {self.resultado_I1}\Corriente 2 = {self.resultado_I2}\n"
-                                f"Flujo 1 = {self.resultado_flujo1}\nFlujo 2 = {self.resultado_flujo2}")
+            messagebox.showinfo(
+                "Resultado",
+                f"RESULTADO:\n\n"
+                f"Corriente 1 = {self.resultado_I1}\n"
+                f"Corriente 2 = {self.resultado_I2}\n\n"
+                f"Flujo 1 = {self.resultado_flujo1}\n"
+                f"Flujo 2 = {self.resultado_flujo2}"
+            )
+
 
     
 
