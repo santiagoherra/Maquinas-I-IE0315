@@ -36,7 +36,7 @@ class CircuitoMagnetico:
         denominator = self.funcion_a - self.funcion_b * B
         if denominator == 0:
             messagebox.showerror("Error de cálculo", "División por cero en la función H(B). Verifique los valores ingresados para la curva B-H.")
-            return None  # O un valor apropiado como 0 si deseas continuar la ejecución
+            return None
         return B / denominator
 
 
@@ -46,15 +46,14 @@ class CircuitoMagnetico:
             return None, None
 
         try:
-            # Estimar los valores iniciales
-            p0 = [max(B_values), max(H_values) / 2]
-            popt, _ = curve_fit(self.funcion_bh, H_values, B_values, p0=p0)
+            # Ajustar la función B(H) = (a * H) / (1 + b * H)
+            popt, _ = curve_fit(lambda H, a, b: (a * H) / (1 + b * H), H_values, B_values, p0=[max(B_values), 0.1])
             self.funcion_a, self.funcion_b = popt
 
-            # Mostrar los valores de a y b
+            # Mostrar los valores de a y b en la nueva forma
             print(f"Valores ajustados: a = {self.funcion_a}, b = {self.funcion_b}")
             
-            ecuacion_str = f"{self.funcion_a:.4f} * H / ({self.funcion_b:.4f} + H)"
+            ecuacion_str = f"B(H) = {self.funcion_a:.4f} * H / (1 + {self.funcion_b:.4f} * H)"
             messagebox.showinfo("Ecuación B(H)", f"La ecuación B(H) es: {ecuacion_str}")
             return self.funcion_a, self.funcion_b
 
@@ -62,9 +61,8 @@ class CircuitoMagnetico:
             messagebox.showerror("Error", f"No se pudo ajustar la curva: {str(e)}.")
             return None, None
 
-
     def funcion_bh(self, H, a, b):
-        return a * H / (b + H)
+        return a * H / (1 + b * H)
 
     def validar_formato_tabla(self, texto):
         texto = texto.strip()
@@ -85,11 +83,11 @@ class CircuitoMagnetico:
         permitido = set("H0123456789+*/.=() ")
         for char in texto:
             if char not in permitido:
-                messagebox.showerror("Error de formato", "Solo se permiten números, la letra 'H', y operadores matemáticos.")
+                messagebox.sho  werror("Error de formato", "Solo se permiten números, la letra 'H', y operadores matemáticos.")
                 return None, None
 
         # Expresión regular modificada para aceptar ecuaciones con o sin "B ="
-        patron = r"(?:B\s*=\s*)?([\d.]+)\s*\*\s*H\s*/\s*\(([\d.]+)\s*\+\s*H\)"
+        patron = r"^(?:B\s*=\s*)?([\d.]+)\s*\*\s*H\s*/\s*\(1\s*\+\s*([\d.]+)\s*\*\s*H\)$"
         coincidencia = re.match(patron, texto)
         
         if coincidencia:
@@ -99,7 +97,7 @@ class CircuitoMagnetico:
         
             return self.funcion_a, self.funcion_b
         else:
-            messagebox.showerror("Error de formato", "El formato debe ser: B = a * H / (b + H) o a * H / (b + H)")
+            messagebox.showerror("Error de formato", "El formato debe ser: B = a * H / (1 + b * H) o a * H / (1 + b * H)")
             return None, None
 
     def procesar_datos_tabla(self, texto_tabla):
@@ -119,7 +117,7 @@ class CircuitoMagnetico:
                     return None, None
 
         return H_values, B_values
-
+    
     # Crear las entradas gráficas y otros métodos ya existentes
     def crear_entradas(self):
         # Función para crear una entrada con un combobox para la unidad
@@ -166,7 +164,7 @@ class CircuitoMagnetico:
         self.label_tabla = tk.Label(self.ventana, text="Ingrese los puntos H-B (Ejemplo: H1,B1; H2,B2...)")
         self.entry_tabla = tk.Entry(self.ventana)
 
-        self.label_ecuacion = tk.Label(self.ventana, text="Ingrese la ecuación para H-B (Ejemplo: B = a * H / (b + H))")
+        self.label_ecuacion = tk.Label(self.ventana, text="Ingrese la ecuación para H-B (Ejemplo de Formato: B = a * H / (1 + b*H))")
         self.entry_ecuacion = tk.Entry(self.ventana)
 
         # Botón para procesar datos
