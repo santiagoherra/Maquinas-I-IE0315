@@ -191,14 +191,15 @@ class CircuitoMagnetico:
         N_1, N_2, I_1, I_2, flujo_E, coe_dispersion, f_apilado = self.valores_magnitudes_electricas
 
         # Asignar valores a las variables de dimensiones del circuito magnético
-        L3, LE, Sc, SL, A, L1, L2, defor_area = self.valores_dimensiones
+        L1, L2, L3, LE, Sc, SL, A, defor_area = self.valores_dimensiones
 
         pdb.set_trace()
         #Obtener el flujo de dispersion:
-        flujo_dispersion_E = (coe_dispersion - 1) / flujo_E
 
-        #corrigiendo el flujo de el entre hierro 
-        flujo_E = flujo_E + flujo_dispersion_E
+        if coe_dispersion != 0:
+            flujo_dispersion_E = (coe_dispersion - 1) * flujo_E
+            #corrigiendo el flujo de el entre hierro 
+            flujo_E = flujo_E + flujo_dispersion_E
 
         # Corregir el área efectiva si se dio un porcentaje de deformación del área
         if defor_area is not None:
@@ -415,8 +416,15 @@ class CircuitoMagnetico:
 
         if self.valores_magnitudes_electricas and self.valores_dimensiones:
             self.solucion()
-            messagebox.showinfo(f"RESULTADO:\nCorriente 1 = {self.resultado_I1}\Corriente 2 = {self.resultado_I2}\n"
-                                f"Flujo 1 = {self.resultado_flujo1}\nFlujo 2 = {self.resultado_flujo2}")
+            messagebox.showinfo(
+                "Resultado",
+                f"RESULTADO:\n\n"
+                f"Corriente 1 = {self.resultado_I1}\n"
+                f"Corriente 2 = {self.resultado_I2}\n\n"
+                f"Flujo 1 = {self.resultado_flujo1}\n"
+                f"Flujo 2 = {self.resultado_flujo2}"
+            )
+            
 
     
 
