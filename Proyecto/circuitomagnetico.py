@@ -188,7 +188,7 @@ class CircuitoMagnetico:
         flujo_E_bandera = False
 
         # Asignar valores a las variables de magnitudes eléctricas (entradas del usuario)
-        N_1, N_2, I_1, I_2, flujo_E, f_apilado, coe_dispersion = self.valores_magnitudes_electricas
+        N_1, N_2, I_1, I_2, flujo_E, coe_dispersion, f_apilado = self.valores_magnitudes_electricas
 
         # Asignar valores a las variables de dimensiones del circuito magnético
         L3, LE, Sc, SL, A, L1, L2, defor_area = self.valores_dimensiones
@@ -388,7 +388,7 @@ class CircuitoMagnetico:
         factor_apilado = self.validar_entrada(self.entry_factor_apilado, "Factor Apilado", permitir_negativo=False, condicion=lambda x: 0 < x < 1)
 
         pdb.set_trace()
-        
+
         SL = self.convertir_a_unidades(self.validar_entrada(self.entry_SL, "Área SL", permitir_negativo=False), self.unidad_SL.get(), 'area')
         Sc = self.convertir_a_unidades(self.validar_entrada(self.entry_Sc, "Área Sc", permitir_negativo=False), self.unidad_Sc.get(), 'area')
 
