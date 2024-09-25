@@ -82,7 +82,7 @@ class CircuitoMagnetico:
         # Convertir 'h' minúscula a 'H' y asegurar que todo esté en mayúsculas
         texto = texto.replace('h', 'H').upper()
         
-        permitido = set("H0123456789+-*/.=() ")
+        permitido = set("H0123456789+*/.=() ")
         for char in texto:
             if char not in permitido:
                 messagebox.showerror("Error de formato", "Solo se permiten números, la letra 'H', y operadores matemáticos.")
