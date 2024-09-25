@@ -33,7 +33,12 @@ class CircuitoMagnetico:
         return (self.funcion_a * H) / (1 + self.funcion_b * H)
 
     def funcion_H_B(self, B):
-        return B / (self.funcion_a - self.funcion_b * B)
+        denominator = self.funcion_a - self.funcion_b * B
+        if denominator == 0:
+            messagebox.showerror("Error de cálculo", "División por cero en la función H(B). Verifique los valores ingresados para la curva B-H.")
+            return None  # O un valor apropiado como 0 si deseas continuar la ejecución
+        return B / denominator
+
 
     def generar_ecuacion_bh(self, H_values, B_values):
         if len(H_values) < 2 or len(B_values) < 2:
@@ -97,54 +102,6 @@ class CircuitoMagnetico:
             messagebox.showerror("Error de formato", "El formato debe ser: B = a * H / (b + H) o a * H / (b + H)")
             return None, None
 
-    def obtener_curva_hb_gui(self):
-        ventana_hb = tk.Toplevel(self.ventana)
-        ventana_hb.title("Curva H-B")
-        ventana_hb.geometry("700x300")
-        
-        def seleccionar_opcion():
-            opcion = hb_opcion.get()
-            if opcion == "tabla":
-                label_tabla.pack(side="top", fill="x")
-                entry_tabla.pack(side="top", fill="x")
-                label_ecuacion.pack_forget()
-                entry_ecuacion.pack_forget()
-            elif opcion == "ecuacion":
-                label_ecuacion.pack(side="top", fill="x")
-                entry_ecuacion.pack(side="top", fill="x")
-                label_tabla.pack_forget()
-                entry_tabla.pack_forget()
-
-        hb_opcion = tk.StringVar(value="tabla")
-        tk.Radiobutton(ventana_hb, text="Tabla de datos", variable=hb_opcion, value="tabla", command=seleccionar_opcion).pack()
-        tk.Radiobutton(ventana_hb, text="Ecuación", variable=hb_opcion, value="ecuacion", command=seleccionar_opcion).pack()
-
-        label_tabla = tk.Label(ventana_hb, text="Ingrese los puntos H-B (Ejemplo: H1,B1; H2,B2...)")
-        entry_tabla = tk.Entry(ventana_hb)
-
-        label_ecuacion = tk.Label(ventana_hb, text="Ingrese la ecuación para H-B (Ejemplo: B = a * H / (b + H))")
-        entry_ecuacion = tk.Entry(ventana_hb)
-
-        def procesar_datos():
-            texto_tabla = entry_tabla.get().strip() if hb_opcion.get() == "tabla" else None
-            texto_ecuacion = entry_ecuacion.get().strip() if hb_opcion.get() == "ecuacion" else None
-            
-            if hb_opcion.get() == "tabla" and texto_tabla and self.validar_formato_tabla(texto_tabla):
-                H_values, B_values = self.procesar_datos_tabla(texto_tabla)
-                if H_values and B_values:
-                    self.generar_ecuacion_bh(H_values, B_values)
-            
-            elif hb_opcion.get() == "ecuacion" and texto_ecuacion:
-                self.validar_formato_ecuacion(texto_ecuacion)
-            
-            else:
-                messagebox.showerror("Error", "Debe ingresar datos válidos en la tabla o la ecuación antes de continuar.")
-
-        tk.Button(ventana_hb, text="Aceptar", command=procesar_datos).pack()
-
-        # Mostrar la opción seleccionada al principio
-        seleccionar_opcion()
-
     def procesar_datos_tabla(self, texto_tabla):
         pares_hb = texto_tabla.split(";")
         H_values = []
@@ -164,22 +121,72 @@ class CircuitoMagnetico:
         return H_values, B_values
 
     # Crear las entradas gráficas y otros métodos ya existentes
-    def crear_entradas_hb(self):
-        # El resto de la función de crear_entradas, aquí puedes agregar un botón para la curva H-B
-        self.entry_N1, _ = self.crear_entrada("N1 [vueltas]", 0)
-        # ... (el resto de tus entradas)
-        tk.Button(self.ventana, text="Ajustar Curva H-B", command=self.obtener_curva_hb_gui).grid(row=16, column=0, columnspan=3, pady=10)
+    def crear_entradas(self):
+        # Función para crear una entrada con un combobox para la unidad
+        def crear_entrada(label, fila, tipo_unidad=None):
+            tk.Label(self.ventana, text=label).grid(row=fila, column=0, padx=5, pady=5)
+            entry = tk.Entry(self.ventana)
+            entry.grid(row=fila, column=1, padx=5, pady=5)
+            if tipo_unidad:
+                combobox = ttk.Combobox(self.ventana, values=tipo_unidad)
+                combobox.grid(row=fila, column=2)
+                combobox.set(tipo_unidad[0])  # Seleccionar por defecto la primera unidad
+                return entry, combobox
+            return entry, None
 
-    def crear_entrada(self, label, fila, tipo_unidad=None):
-        tk.Label(self.ventana, text=label).grid(row=fila, column=0, padx=5, pady=5)
-        entry = tk.Entry(self.ventana)
-        entry.grid(row=fila, column=1, padx=5, pady=5)
-        if tipo_unidad:
-            combobox = ttk.Combobox(self.ventana, values=tipo_unidad)
-            combobox.grid(row=fila, column=2)
-            combobox.set(tipo_unidad[0])  
-            return entry, combobox
-        return entry, None
+        # Crear las entradas y comboboxes
+        self.entry_N1, _ = crear_entrada("N1 [vueltas]", 0)
+        self.entry_N2, _ = crear_entrada("N2 [vueltas]", 1)
+        self.entry_I1, _ = crear_entrada("I1 [A]", 2)
+        self.entry_I2, _ = crear_entrada("I2 [A]", 3)
+        self.entry_factor_apilado, _ = crear_entrada("Factor Apilado", 4)
+        self.entry_SL, self.unidad_SL = crear_entrada("SL [Área]", 5, ["m²", "cm²", "mm²"])
+        self.entry_Sc, self.unidad_Sc = crear_entrada("Sc [Área]", 6, ["m²", "cm²", "mm²"])
+        self.entry_A, self.unidad_A = crear_entrada("Ancho A [Longitud]", 7, ["m", "cm", "mm"])
+        self.entry_L1, self.unidad_L1 = crear_entrada("L1 [Longitud]", 8, ["m", "cm", "mm"])
+        self.entry_L2, self.unidad_L2 = crear_entrada("L2 [Longitud]", 9, ["m", "cm", "mm"])
+        self.entry_L3, self.unidad_L3 = crear_entrada("L3 [Longitud]", 10, ["m", "cm", "mm"])
+        self.entry_LE, self.unidad_LE = crear_entrada("LE [Longitud]", 11, ["m", "cm", "mm"])
+        self.entry_flujo_entre, _ = crear_entrada("Flujo ΦE [Wb]", 12)
+        self.entry_coef_dispersion, _ = crear_entrada("Coef. Dispersión", 13)
+        self.entry_porcentaje_deformacion, _ = crear_entrada("Deformación Área [%]", 14)
+
+        # Implementación de la figura
+        self.imagen_circuito = PhotoImage(file="Proyecto/figura_circuito.png")
+        label_imagen_circuito = tk.Label(self.ventana, image=self.imagen_circuito)
+        label_imagen_circuito.grid(row=0, column=4, rowspan=15, padx=20, pady=20, sticky='n')
+
+        # Opciones para seleccionar "Tabla de datos" o "Ecuación"
+        tk.Label(self.ventana, text="Seleccione cómo ingresar la curva H-B:").grid(row=15, column=0, columnspan=3, pady=10)
+        self.hb_opcion = tk.StringVar(value="tabla")
+
+        tk.Radiobutton(self.ventana, text="Tabla de datos", variable=self.hb_opcion, value="tabla", command=self.seleccionar_opcion).grid(row=16, column=0)
+        tk.Radiobutton(self.ventana, text="Ecuación", variable=self.hb_opcion, value="ecuacion", command=self.seleccionar_opcion).grid(row=16, column=1)
+
+        self.label_tabla = tk.Label(self.ventana, text="Ingrese los puntos H-B (Ejemplo: H1,B1; H2,B2...)")
+        self.entry_tabla = tk.Entry(self.ventana)
+
+        self.label_ecuacion = tk.Label(self.ventana, text="Ingrese la ecuación para H-B (Ejemplo: B = a * H / (b + H))")
+        self.entry_ecuacion = tk.Entry(self.ventana)
+
+        # Botón para procesar datos
+        tk.Button(self.ventana, text="Enviar", command=self.procesar_datos).grid(row=18, column=0, columnspan=3, pady=10)
+
+        # Mostrar la opción seleccionada al principio
+        self.seleccionar_opcion()
+
+    def seleccionar_opcion(self):
+        opcion = self.hb_opcion.get()
+        if opcion == "tabla":
+            self.label_tabla.grid(row=17, column=0, columnspan=2, padx=5, pady=5)
+            self.entry_tabla.grid(row=17, column=2, columnspan=2, padx=5, pady=5)
+            self.label_ecuacion.grid_forget()
+            self.entry_ecuacion.grid_forget()
+        elif opcion == "ecuacion":
+            self.label_ecuacion.grid(row=17, column=0, columnspan=2, padx=5, pady=5)
+            self.entry_ecuacion.grid(row=17, column=2, columnspan=2, padx=5, pady=5)
+            self.label_tabla.grid_forget()
+            self.entry_tabla.grid_forget()
 
     def solucion(self):
         # Inicializar banderas para verificar qué bobina está activa y qué flujo se ha calculado
@@ -312,46 +319,7 @@ class CircuitoMagnetico:
 
 
     #METODOS PARA OBTENER LOS DATOS Y VALIDAR LOS DATOS
-
-    def crear_entradas(self):
-        # Función para crear una entrada con un combobox para la unidad
-        def crear_entrada(label, fila, tipo_unidad=None):
-            tk.Label(self.ventana, text=label).grid(row=fila, column=0, padx=5, pady=5)
-            entry = tk.Entry(self.ventana)
-            entry.grid(row=fila, column=1, padx=5, pady=5)
-            if tipo_unidad:
-                combobox = ttk.Combobox(self.ventana, values=tipo_unidad)
-                combobox.grid(row=fila, column=2)
-                combobox.set(tipo_unidad[0])  # Seleccionar por defecto la primera unidad
-                return entry, combobox
-            return entry, None
-
-        # Crear las entradas y comboboxes
-        self.entry_N1, _ = crear_entrada("N1 [vueltas]", 0)
-        self.entry_N2, _ = crear_entrada("N2 [vueltas]", 1)
-        self.entry_I1, _ = crear_entrada("I1 [A]", 2)
-        self.entry_I2, _ = crear_entrada("I2 [A]", 3)
-        self.entry_factor_apilado, _ = crear_entrada("Factor Apilado", 4)
-        self.entry_SL, self.unidad_SL = crear_entrada("SL [Área]", 5, ["m²", "cm²", "mm²"])
-        self.entry_Sc, self.unidad_Sc = crear_entrada("Sc [Área]", 6, ["m²", "cm²", "mm²"])
-        self.entry_A, self.unidad_A = crear_entrada("Ancho A [Longitud]", 7, ["m", "cm", "mm"])
-        self.entry_L1, self.unidad_L1 = crear_entrada("L1 [Longitud]", 8, ["m", "cm", "mm"])
-        self.entry_L2, self.unidad_L2 = crear_entrada("L2 [Longitud]", 9, ["m", "cm", "mm"])
-        self.entry_L3, self.unidad_L3 = crear_entrada("L3 [Longitud]", 10, ["m", "cm", "mm"])
-        self.entry_LE, self.unidad_LE = crear_entrada("LE [Longitud]", 11, ["m", "cm", "mm"])
-        self.entry_flujo_entre, _ = crear_entrada("Flujo ΦE [Wb]", 12)
-        self.entry_coef_dispersion, _ = crear_entrada("Coef. Dispersión", 13)
-        self.entry_porcentaje_deformacion, _ = crear_entrada("Deformación Área [%]", 14)
-
-        #IMPLEMENTACION DE LA FIGURA
-        self.imagen_circuito = PhotoImage(file="Proyecto/figura_circuito.png")
-        label_imagen_circuito = tk.Label(self.ventana, image=self.imagen_circuito)
-        label_imagen_circuito.grid(row=0, column=4, rowspan=15, padx=20, pady=20, sticky='n')
-
-        # Botones para procesar datos
-        tk.Button(self.ventana, text="Enviar", command=self.procesar_datos).grid(row=15, column=0, columnspan=3, pady=10)
-        tk.Button(self.ventana, text="Ajustar Curva H-B", command=self.obtener_curva_hb_gui).grid(row=16, column=0, columnspan=3, pady=10)
-   
+    
     def validar_entrada(self, entry, campo_nombre, permitir_negativo=False, condicion=None):
         try:
             valor = float(entry.get().strip())  # Eliminar espacios en blanco
@@ -397,11 +365,14 @@ class CircuitoMagnetico:
         LE = self.convertir_a_unidades(self.validar_entrada(self.entry_LE, "Longitud LE", permitir_negativo=False), self.unidad_LE.get(), 'longitud')
 
         flujo_entre = self.validar_entrada(self.entry_flujo_entre, "Flujo ΦE [Wb]", permitir_negativo=False)
-        coeficiente_dispersion = self.validar_entrada(self.entry_coef_dispersion, "Coef. Dispersión", permitir_negativo=False) if self.entry_coef_dispersion.get() else None
+
+        # Ahora el coeficiente de dispersión es obligatorio
+        coeficiente_dispersion = self.validar_entrada(self.entry_coef_dispersion, "Coef. Dispersión", permitir_negativo=False)
+        
         porcentaje_deformacion = self.validar_entrada(self.entry_porcentaje_deformacion, "Deformación Área [%]", permitir_negativo=False) if self.entry_porcentaje_deformacion.get() else None
 
-        # Verificar si algún campo contiene un valor no válido
-        if None in [N1, N2, factor_apilado, SL, Sc, A, L1, L2, L3, LE, flujo_entre]:
+        # Verificar si algún campo obligatorio contiene un valor no válido
+        if None in [N1, N2, factor_apilado, SL, Sc, A, L1, L2, L3, LE, flujo_entre, coeficiente_dispersion]:
             messagebox.showerror("Error", "Por favor corrija los errores antes de continuar.")
             return None, None
 
@@ -413,9 +384,22 @@ class CircuitoMagnetico:
         # Recolectar los datos validados y convertidos
         self.recoger_datos()
 
+        # Procesar la entrada de la curva H-B según la selección
+        texto_tabla = self.entry_tabla.get().strip() if self.hb_opcion.get() == "tabla" else None
+        texto_ecuacion = self.entry_ecuacion.get().strip() if self.hb_opcion.get() == "ecuacion" else None
+
+        if self.hb_opcion.get() == "tabla" and texto_tabla and self.validar_formato_tabla(texto_tabla):
+            H_values, B_values = self.procesar_datos_tabla(texto_tabla)
+            if H_values and B_values:
+                self.generar_ecuacion_bh(H_values, B_values)
+        elif self.hb_opcion.get() == "ecuacion" and texto_ecuacion:
+            self.validar_formato_ecuacion(texto_ecuacion)
+        else:
+            messagebox.showerror("Error", "Debe ingresar datos válidos en la tabla o la ecuación antes de continuar.")
+
         if self.valores_magnitudes_electricas and self.valores_dimensiones:
             self.solucion()
-            messagebox.showinfo(f"RESULTADO:\nCorriente 1 = {self.resultado_I1}\Corriente 2 = {self.resultado_I2}\n"
+            messagebox.showinfo(f"RESULTADO:\nCorriente 1 = {self.resultado_I1}\nCorriente 2 = {self.resultado_I2}\n"
                                 f"Flujo 1 = {self.resultado_flujo1}\nFlujo 2 = {self.resultado_flujo2}")
 
     
