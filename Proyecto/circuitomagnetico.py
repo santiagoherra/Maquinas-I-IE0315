@@ -6,6 +6,7 @@ import tkinter as tk
 from tkinter import messagebox, PhotoImage, ttk
 import math
 from scipy.optimize import curve_fit
+import pdb
 
 class CircuitoMagnetico:
 
@@ -192,8 +193,12 @@ class CircuitoMagnetico:
         # Asignar valores a las variables de dimensiones del circuito magnético
         L3, LE, Sc, SL, A, L1, L2, defor_area = self.valores_dimensiones
 
-        # Corregir el flujo entre las bobinas si se proporcionó un coeficiente de dispersión
-        flujo_E = flujo_E / coe_dispersion  # Se ajusta el flujo para incluir la dispersión
+        pdb.set_trace()
+        #Obtener el flujo de dispersion:
+        flujo_dispersion_E = (coe_dispersion - 1) / flujo_E
+
+        #corrigiendo el flujo de el entre hierro 
+        flujo_E = flujo_E + flujo_dispersion_E
 
         # Corregir el área efectiva si se dio un porcentaje de deformación del área
         if defor_area is not None:
@@ -382,6 +387,8 @@ class CircuitoMagnetico:
         
         factor_apilado = self.validar_entrada(self.entry_factor_apilado, "Factor Apilado", permitir_negativo=False, condicion=lambda x: 0 < x < 1)
 
+        pdb.set_trace()
+        
         SL = self.convertir_a_unidades(self.validar_entrada(self.entry_SL, "Área SL", permitir_negativo=False), self.unidad_SL.get(), 'area')
         Sc = self.convertir_a_unidades(self.validar_entrada(self.entry_Sc, "Área Sc", permitir_negativo=False), self.unidad_Sc.get(), 'area')
 
