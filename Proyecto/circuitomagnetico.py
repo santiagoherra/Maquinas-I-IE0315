@@ -199,8 +199,6 @@ class CircuitoMagnetico:
 
         # Asignar valores a las variables de dimensiones del circuito magnético
         L1, L2, L3, LE, Sc, SL, A, defor_area = self.valores_dimensiones
-
-        pdb.set_trace()
         #Obtener el flujo de dispersion:
 
         if coe_dispersion != 0:
@@ -365,6 +363,7 @@ class CircuitoMagnetico:
         L3 = self.convertir_a_unidades(self.validar_entrada(self.entry_L3, "Altura L3", permitir_negativo=False), self.unidad_L3.get(), 'longitud')
         LE = self.convertir_a_unidades(self.validar_entrada(self.entry_LE, "Longitud LE", permitir_negativo=False), self.unidad_LE.get(), 'longitud')
 
+        
         flujo_entre = self.validar_entrada(self.entry_flujo_entre, "Flujo ΦE [Wb]", permitir_negativo=False)
 
         # Ahora el coeficiente de dispersión es obligatorio
