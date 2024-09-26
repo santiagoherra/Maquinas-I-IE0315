@@ -296,8 +296,12 @@ class CircuitoMagnetico:
             # Calcular el campo magnético H para la malla 2 usando la función B-H
             H_flujo_2 = self.funcion_H_B(B_flujo2)
 
+            if flujo_E_bandera:
             # Calcular la corriente I_2 usando la FMM de la malla 2
-            I_2 = (H_flujo_2 * (L2 + A) + fmm_barra_central_total) / N_2
+                I_2 = -(H_flujo_2 * (L2 + A) + fmm_barra_central_total) / N_2
+            else:
+                I_2 = (H_flujo_2 * (L2 + A) + fmm_barra_central_total) / N_2
+
         else:
             # Si el flujo 2 ha sido calculado, hacer el cálculo inverso para I_1
             B_flujo1 = flujo1 / (SL * f_apilado)
@@ -305,8 +309,12 @@ class CircuitoMagnetico:
             # Calcular el campo magnético H para la malla 1
             H_flujo_1 = self.funcion_H_B(B_flujo1)
 
+            if flujo_E_bandera:
             # Calcular la corriente I_1 usando la FMM de la malla 1
-            I_1 = (H_flujo_1 * (L2 + A) + fmm_barra_central_total) / N_1
+                I_1 = -(H_flujo_1 * (L2 + A) + fmm_barra_central_total) / N_1
+            else:
+                I_1 = (H_flujo_1 * (L2 + A) + fmm_barra_central_total) / N_1
+
 
         #ASIGNANDO VARIABLES PARA EL RESULTADO FINAL.
         self.resultado_I1 = I_1
