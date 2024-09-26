@@ -239,16 +239,16 @@ class CircuitoMagnetico:
         H_entrehierro = B_entrehierro / (4 * math.pi * 10**-7)
 
         # Calcular la FMM total de la barra central y el entrehierro
-        fmm_barra_central_total = H_flujoL3 * A + H_entrehierro * LE  # FMM = H * largo
+        fmm_barra_central_total = H_flujoL3 * (L3-LE) + H_entrehierro * LE  # FMM = H * largo
 
         # Si la bobina 1 estaba activa
         if bobina1_bandera:
             #Si el flujo cambia de sentido se cambio el signo en la LTK
             if flujo_E_bandera:
-                 H_flujo_1 = (fmm_bobina1 + fmm_barra_central_total) / L1
+                 H_flujo_1 = (fmm_bobina1 + fmm_barra_central_total) / (L1 + A)
             else:
             # Calcular el campo magnético en la malla 1 (restando FMM total de la FMM de la bobina 1)
-                H_flujo_1 = (fmm_bobina1 - fmm_barra_central_total) / L1
+                H_flujo_1 = (fmm_bobina1 - fmm_barra_central_total) / (L1 + A)
 
             # Obtener la densidad de flujo magnético B para la malla 1 usando la función B-H
             B_flujo1 = self.funcion_B_H(H_flujo_1)
@@ -269,10 +269,10 @@ class CircuitoMagnetico:
         else:
             #Si el flujo cambia de sentido se cambio el signo en la LTK
             if flujo_E_bandera:
-                 H_flujo_1 = (fmm_bobina1 + fmm_barra_central_total) / L1
+                 H_flujo_1 = (fmm_bobina1 + fmm_barra_central_total) / (L1 + A)
             else:
             # Si la bobina 2 estaba activa, calcular el campo magnético en la malla 2
-                H_flujo_2 = (fmm_bobina2 - fmm_barra_central_total) / L1
+                H_flujo_2 = (fmm_bobina2 - fmm_barra_central_total) / (L1 + A)
 
             # Obtener la densidad de flujo magnético B para la malla 2
             B_flujo2 = self.funcion_B_H(H_flujo_2)
@@ -297,7 +297,7 @@ class CircuitoMagnetico:
             H_flujo_2 = self.funcion_H_B(B_flujo2)
 
             # Calcular la corriente I_2 usando la FMM de la malla 2
-            I_2 = (H_flujo_2 * L2 + fmm_barra_central_total) / N_2
+            I_2 = (H_flujo_2 * (L2 + A) + fmm_barra_central_total) / N_2
         else:
             # Si el flujo 2 ha sido calculado, hacer el cálculo inverso para I_1
             B_flujo1 = flujo1 / (SL * f_apilado)
@@ -306,7 +306,7 @@ class CircuitoMagnetico:
             H_flujo_1 = self.funcion_H_B(B_flujo1)
 
             # Calcular la corriente I_1 usando la FMM de la malla 1
-            I_1 = (H_flujo_1 * L2 + fmm_barra_central_total) / N_1
+            I_1 = (H_flujo_1 * (L2 + A) + fmm_barra_central_total) / N_1
 
         #ASIGNANDO VARIABLES PARA EL RESULTADO FINAL.
         self.resultado_I1 = I_1
