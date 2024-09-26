@@ -205,14 +205,14 @@ class CircuitoMagnetico:
             flujo_E = flujo_E + flujo_dispersion_E
 
         # Corregir el área efectiva si se dio un porcentaje de deformación del área
-        if defor_area is not None:
+        if defor_area != 0:
             Sc = Sc * (1 + defor_area / 100)  # Ajuste del área en base a la deformación
 
-        elif Sc != 0:
+        elif defor_area == 0 or defor_area is None:
             #Se el agrega el largo extra del entre hierro para simular la deformacion del area.
             #Esto segun lo que dijo en clase.
-            Sc = Sc + LE
-            A = A + LE
+            largoyancho_entrehierro = math.sqrt(Sc)
+            Sc = (largoyancho_entrehierro + LE) * (largoyancho_entrehierro + LE)
 
         if flujo_E < 0:
             flujo_E = abs(flujo_E)
