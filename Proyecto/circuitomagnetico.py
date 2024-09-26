@@ -83,7 +83,7 @@ class CircuitoMagnetico:
         permitido = set("H0123456789+*/.=() ")
         for char in texto:
             if char not in permitido:
-                messagebox.sho  werror("Error de formato", "Solo se permiten números, la letra 'H', y operadores matemáticos.")
+                messagebox.showerror("Error de formato", "Solo se permiten números, la letra 'H', y operadores matemáticos.")
                 return None, None
 
         # Expresión regular modificada para aceptar ecuaciones con o sin "B ="
