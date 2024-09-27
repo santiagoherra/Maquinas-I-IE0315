@@ -1,5 +1,6 @@
 #Este es la tarea programada de la solucion del circuito magnetico.
 #Los participantes de la tarea son Santiago Herra Castro C13721 y Josue Garcia Blandon C13040
+#Correr en la carpeta del archivo para poder utilizar la figura del circuito.
 
 #librerias a utilizar
 import re
