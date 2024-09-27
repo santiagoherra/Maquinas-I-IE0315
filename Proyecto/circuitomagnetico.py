@@ -1,5 +1,10 @@
-#Este es la tarea programada de la solucion del circuito magnetico.
-#Los participantes de la tarea son Santiago Herra Castro C13721 y Josue Garcia Blandon C13040
+# Universidad de Costa Rica
+# Escuela de Ingenieria Electrica | Maquinas Electricas I - IE-0315
+# Profesor: Fausto Calderon | Asistente:  Cristian David Vega 
+# INTEGRANTES: Santiago Herra Castro C13721 y Josue Garcia Blandon C13040
+# FECHA DE REALIZACION: 24/09/2024
+
+#IMPORTANTE
 #Correr en la carpeta del archivo para poder utilizar la figura del circuito.
 
 #librerias a utilizar
@@ -8,7 +13,12 @@ import tkinter as tk
 from tkinter import messagebox, PhotoImage, ttk
 import math
 from scipy.optimize import curve_fit
-import pdb
+
+
+# Instalar las librerías externas:
+# Scipy es una librería externa que puedes instalar con pip:
+# En la terminal o línea de comandos, ejecuta:
+# pip install scipy
 
 class CircuitoMagnetico:
 
@@ -171,9 +181,7 @@ class CircuitoMagnetico:
         tk.Radiobutton(self.ventana, text="Tabla de datos", variable=self.hb_opcion, value="tabla", command=self.seleccionar_opcion).grid(row=16, column=0)
         tk.Radiobutton(self.ventana, text="Ecuación", variable=self.hb_opcion, value="ecuacion", command=self.seleccionar_opcion).grid(row=16, column=1)
 
-        self.label_tabla = tk.Label(self.ventana, text="Ingrese los puntos H-B (Ejemplo: H1,B1; H2,B2...) el primero mayor al 25"
-                                                     "% de la recta\n y el otro mayor al 90% de la recta. Si no es de esta manera "
-                                                       "el valor de a y b estaran mal")
+        self.label_tabla = tk.Label(self.ventana, text="Ingrese los puntos H-B (Ejemplo: H1,B1; H2,B2...)")
         self.entry_tabla = tk.Entry(self.ventana)
 
         self.label_ecuacion = tk.Label(self.ventana, text="Ingrese la ecuación para H-B (Ejemplo de Formato: B = a * H / (1 + b*H))")
