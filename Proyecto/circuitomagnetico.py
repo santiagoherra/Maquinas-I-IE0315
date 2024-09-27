@@ -33,11 +33,19 @@ class CircuitoMagnetico:
         return (self.funcion_a * H) / (1 + self.funcion_b * H)
 
     def funcion_H_B(self, B):
-        denominator = self.funcion_a - self.funcion_b * B
-        if denominator == 0:
-            messagebox.showerror("Error de cálculo", "División por cero en la función H(B). Verifique los valores ingresados para la curva B-H.")
+        try:
+            # Realiza el cálculo normalmente
+            denominator = self.funcion_a - self.funcion_b * B
+            if denominator == 0:
+                messagebox.showerror("Error de cálculo", "División por cero en la función H(B). Verifique los valores ingresados para la curva B-H.")
+                return None
+            return B / denominator
+        
+        except TypeError:
+            # Captura el error de tipo y no deja que el programa se caiga
+            # Solo logea el error o haz lo que consideres necesario sin detener la ejecución
+            print("Error: Tipo de dato incompatible en la multiplicación de funcion_b y B.")
             return None
-        return B / denominator
 
 
     def generar_ecuacion_bh(self, H_values, B_values):
@@ -161,7 +169,9 @@ class CircuitoMagnetico:
         tk.Radiobutton(self.ventana, text="Tabla de datos", variable=self.hb_opcion, value="tabla", command=self.seleccionar_opcion).grid(row=16, column=0)
         tk.Radiobutton(self.ventana, text="Ecuación", variable=self.hb_opcion, value="ecuacion", command=self.seleccionar_opcion).grid(row=16, column=1)
 
-        self.label_tabla = tk.Label(self.ventana, text="Ingrese los puntos H-B (Ejemplo: H1,B1; H2,B2...)")
+        self.label_tabla = tk.Label(self.ventana, text="Ingrese los puntos H-B (Ejemplo: H1,B1; H2,B2...) el primero mayor al 25"
+                                                     "% de la recta\n y el otro mayor al 90% de la recta. Si no es de esta manera "
+                                                       "el valor de a y b estaran mal")
         self.entry_tabla = tk.Entry(self.ventana)
 
         self.label_ecuacion = tk.Label(self.ventana, text="Ingrese la ecuación para H-B (Ejemplo de Formato: B = a * H / (1 + b*H))")
@@ -199,10 +209,14 @@ class CircuitoMagnetico:
         L1, L2, L3, LE, Sc, SL, A, defor_area = self.valores_dimensiones
         #Obtener el flujo de dispersion:
 
+        if flujo_E < 0:
+            flujo_E = abs(flujo_E)
+            flujo_E_bandera = True
+
         if coe_dispersion != 0:
             flujo_dispersion_E = (coe_dispersion - 1) * flujo_E
             #corrigiendo el flujo de el entre hierro 
-            flujo_E = flujo_E + flujo_dispersion_E
+            flujo_E = flujo_E - flujo_dispersion_E
 
         # Corregir el área efectiva si se dio un porcentaje de deformación del área
         if defor_area != 0:
@@ -214,9 +228,7 @@ class CircuitoMagnetico:
             largoyancho_entrehierro = math.sqrt(Sc)
             Sc = (largoyancho_entrehierro + LE) * (largoyancho_entrehierro + LE)
 
-        if flujo_E < 0:
-            flujo_E = abs(flujo_E)
-            flujo_E_bandera = True
+        
         # Determinar si se proporcionó la corriente I_1 o I_2
         if I_1:
             # Si se dio I_1, calcular la FMM (fuerza magnetomotriz) de la bobina 1
@@ -319,6 +331,11 @@ class CircuitoMagnetico:
         #ASIGNANDO VARIABLES PARA EL RESULTADO FINAL.
         self.resultado_I1 = I_1
         self.resultado_I2 = I_2
+
+        if coe_dispersion != 0:
+            self.resultado_flujo1 = flujo1 - flujo_dispersion_E
+            self.resultado_flujo2 = flujo2 - flujo_dispersion_E
+        
         self.resultado_flujo1 = flujo1
         self.resultado_flujo2 = flujo2
 
@@ -370,13 +387,14 @@ class CircuitoMagnetico:
         LE = self.convertir_a_unidades(self.validar_entrada(self.entry_LE, "Longitud LE", permitir_negativo=False), self.unidad_LE.get(), 'longitud')
 
         
-        flujo_entre = self.validar_entrada(self.entry_flujo_entre, "Flujo ΦE [Wb]", permitir_negativo=False)
+        flujo_entre = self.validar_entrada(self.entry_flujo_entre, "Flujo ΦE [Wb]", permitir_negativo=True)
 
         # Ahora el coeficiente de dispersión es obligatorio
         coeficiente_dispersion = self.validar_entrada(self.entry_coef_dispersion, "Coef. Dispersión", permitir_negativo=False)
         
         porcentaje_deformacion = self.validar_entrada(self.entry_porcentaje_deformacion, "Deformación Área [%]", permitir_negativo=False) if self.entry_porcentaje_deformacion.get() else None
 
+    
         # Verificar si algún campo obligatorio contiene un valor no válido
         if None in [N1, N2, factor_apilado, SL, Sc, A, L1, L2, L3, LE, flujo_entre, coeficiente_dispersion]:
             messagebox.showerror("Error", "Por favor corrija los errores antes de continuar.")
@@ -403,15 +421,15 @@ class CircuitoMagnetico:
         else:
             messagebox.showerror("Error", "Debe ingresar datos válidos en la tabla o la ecuación antes de continuar.")
 
-        if self.valores_magnitudes_electricas and self.valores_dimensiones:
+        if self.valores_magnitudes_electricas and self.valores_dimensiones and self.funcion_a and self.funcion_b:
             self.solucion()
             messagebox.showinfo(
                 "Resultado",
                 f"RESULTADO:\n\n"
                 f"Corriente 1 = {self.resultado_I1}\n"
                 f"Corriente 2 = {self.resultado_I2}\n\n"
-                f"Flujo 1 = {self.resultado_flujo1}\n"
-                f"Flujo 2 = {self.resultado_flujo2}"
+                f"Flujo 1 total = {self.resultado_flujo1}\n"
+                f"Flujo 2 total= {self.resultado_flujo2}"
             )
 
 

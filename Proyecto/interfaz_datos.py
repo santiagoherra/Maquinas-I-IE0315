@@ -186,7 +186,9 @@ def obtener_curva_hb_gui(parent_ventana):
     tk.Radiobutton(ventana_hb, text="Tabla de datos", variable=hb_opcion, value="tabla", command=seleccionar_opcion).pack()
     tk.Radiobutton(ventana_hb, text="Ecuación", variable=hb_opcion, value="ecuacion", command=seleccionar_opcion).pack()
 
-    label_tabla = tk.Label(ventana_hb, text="Ingrese los puntos H-B (Ejemplo: H1,B1; H2,B2...)")
+    label_tabla = tk.Label(ventana_hb, text="Ingrese los puntos H-B (Ejemplo: H1,B1; H2,B2...) el primero mayor al 25"
+                                            "% de la recta y el otro mayor al 90% de la recta. Si no es de eta manera"
+                                            "el valor de a y b estaran mal")
     entry_tabla = tk.Entry(ventana_hb)
 
     label_ecuacion = tk.Label(ventana_hb, text="Ingrese la ecuación para H-B (Ejemplo: B = m * H + c)")
