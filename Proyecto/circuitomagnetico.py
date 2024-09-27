@@ -1,4 +1,5 @@
-#Este es el archivo el cual se dara para poder crear las funciones necesarias para poder resolver el circuito magnetico.
+#Este es la tarea programada de la solucion del circuito magnetico.
+#Los participantes de la tarea son Santiago Herra Castro C13721 y Josue Garcia Blandon C13040
 
 #librerias a utilizar
 import re
